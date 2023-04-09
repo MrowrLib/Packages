@@ -1,8 +1,0 @@
-package("Memory")
-    set_kind("library")
-    set_homepage("https://github.com/MrowrLib/Memory.h")
-    set_description("A header-only library for reading/writing memory.")
-    add_urls("https://github.com/MrowrLib/Memory.h.git")
-    on_install(function (package)
-        os.cp("include", package:installdir())
-    end)
