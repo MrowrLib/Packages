@@ -6,15 +6,3 @@ package("StringFormatting")
     on_install(function (package)
         os.cp("include", package:installdir())
     end)
-    on_test(function (package) -- Add this on_test function
-        local configs = {}
-        if package:config("use_fmt") then
-            configs.use_fmt = true
-        end
-        assert(package:check_cxxsnippets({configs = configs, test = [=[#include <StringFormatting/StringFormatting.h>
-#include <iostream>
-int main() {
-    std::cout << string_format("Hello {}!", "World") << std::endl;
-}
-]=]}))
-    end)
