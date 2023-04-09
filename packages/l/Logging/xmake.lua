@@ -1,0 +1,8 @@
+package("Logging")
+    set_kind("library")
+    set_homepage("https://github.com/MrowrLib/Logging.h")
+    set_description("A header-only library for simple logging.")
+    add_urls("https://github.com/MrowrLib/Logging.h.git")
+    on_install(function (package)
+        os.cp("include", package:installdir())
+    end)
