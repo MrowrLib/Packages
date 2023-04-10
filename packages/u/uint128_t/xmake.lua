@@ -1,0 +1,10 @@
+package("uint128_t")
+    set_homepage("https://github.com/calccrypto/uint128_t")
+    set_description("A header-only, constexpr implementation of a 128-bit unsigned integer type for C++")
+    add_urls("https://github.com/MrowrLib/uint256_t.git")
+
+    on_install(function (package)
+        os.cp("uint128_t/*.h", package:installdir("include/uint128_t"))
+        os.cp("uint128_t/*.include", package:installdir("include/uint128_t"))
+        os.cp("uint128_t/*.build", package:installdir("include/uint128_t"))
+    end)
