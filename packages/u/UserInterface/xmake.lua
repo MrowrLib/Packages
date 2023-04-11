@@ -1,0 +1,7 @@
+package("UserInterface")
+    set_homepage("https://github.com/MrowrLib/UserInterface.h")
+    set_description("A header-only library for creating simple GUI forms")
+    add_urls("https://github.com/MrowrLib/UserInterface.h.git")
+    on_install(function (package)
+        os.cp("include", package:installdir())
+    end)
