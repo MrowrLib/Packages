@@ -1,5 +1,5 @@
 package("_Log_")
-    set_homepage("https://github.com/MrowrLib/_Log_.h")
+    set_homepage("https://github.com/MrowrLib/_Log_.cpp.h")
     set_description("A header-only library for simple logging.")
     add_urls("https://github.com/MrowrLib/_Log_.cpp.git")
     on_install(function (package)

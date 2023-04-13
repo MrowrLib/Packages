@@ -1,0 +1,8 @@
+package("memory_util")
+    set_homepage("https://github.com/MrowrLib/memory_util.cpp.h")
+    set_description("A header-only library for reading/writing/searching memory.")
+    add_urls("https://github.com/MrowrLib/memory_util.cpp.git")
+    add_deps("string_format", "_Log_")
+    on_install(function (package)
+        os.cp("include", package:installdir())
+    end)
