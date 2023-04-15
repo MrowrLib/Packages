@@ -2,5 +2,9 @@
   "mrowr-log": {
     "baseline": "2023-04-13-99ca0fb",
     "port-version": 0
+  },
+  "mrowr-log-latest": {
+    "baseline": "2023-04-13-99ca0fb",
+    "port-version": 0
   }
 }
