@@ -91,12 +91,12 @@ def update_all_ports():
             content = f.read()
         if "vcpkg_from_git" in content:
             print(f"Updating {port_name}")
-            process_port(port_name)
+            update_port(port_name)
         else:
             print(f"Skipping {port_name}, not using vcpkg_from_git")
 
 
-def process_port(port_name):
+def update_port(port_name):
     print(f"Updating {port_name}")
 
     portfile_path = f'ports/{port_name}/portfile.cmake'
@@ -120,7 +120,8 @@ def process_port(port_name):
         return
 
     subprocess.run(['git', 'add', f'ports/{port_name}/portfile.cmake'])
-    subprocess.run(['git', 'commit', '-m', f'Update {port_name} REF'])
+    subprocess.run(['git', 'commit', '-m', f'Updating {port_name} REF'])
+
     new_version = update_versions(port_name, latest_sha)
     subprocess.run(['git', 'add', 'versions'])
     subprocess.run(['git', 'commit', '--amend', '--no-edit',
@@ -167,6 +168,7 @@ def add_port(port_name, github_username, github_repo_name, ref=None):
     if port_exists(port_name):
         print(f"Port already added: {port_name}")
         return
+
     # Ensure the ports/ and versions/ directories exist
     ports_dir = Path("ports")
     versions_dir = Path("versions")
@@ -226,7 +228,7 @@ vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/{github_repo_name})
     with open(ports_dir / port_name / "portfile.cmake", "w") as f:
         f.write(portfile_content)
 
-    subprocess.run(["git", "add", f"ports/{port_name}/portfile.cmake"])
+    subprocess.run(["git", "add", f"ports/{port_name}"])
     commit_message = f"Add new port {port_name}"
     subprocess.run(["git", "commit", "-m", commit_message])
 
@@ -269,6 +271,9 @@ vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/{github_repo_name})
     with open(baseline_path, "w") as f:
         json.dump(baseline_data, f, indent=2)
 
+    subprocess.run(["git", "add", f"versions"])
+    subprocess.run(["git", "commit", "--amend", "--no-edit"])
+
 
 def main():
     if len(sys.argv) == 1:
@@ -296,8 +301,8 @@ def main():
         "port_name", help="The name of the package to add.")
     add_parser.add_argument(
         "github_path", help="The GitHub path (username/repo) for the package.")
-    add_parser.add_argument("ref", nargs="?", default=None,
-                            help="A specific Git ref (branch, tag, or commit) to add.")
+    add_parser.add_argument(
+        "--ref", default=None, help="A specific Git ref (branch, tag, or commit) to add.")
 
     # update command
     update_parser = subparsers.add_parser(
