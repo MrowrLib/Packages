@@ -1,0 +1,21 @@
+{
+  "name": "mrowr-memory-util-latest",
+  "version-string": "2023-04-15-dc967eb",
+  "description": "MemoryUtil::Read<Easy>(0x69420)",
+  "supports": [
+    "x86-windows",
+    "x64-windows"
+  ],
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    },
+    "mrowr-log",
+    "mrowr-string-format"
+  ]
+}
