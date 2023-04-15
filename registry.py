@@ -163,7 +163,7 @@ def get_github_repo_data(username, repo_name):
     return data
 
 
-def add_port(port_name, github_username, github_repo_name, ref=None, latest=False):
+def add_port(port_name, github_username, github_repo_name, ref=None, dependencies="", latest=False):
     if not re.match(r"^[a-z0-9]+(-[a-z0-9]+)*$", port_name):
         print(
             f"Invalid port name: {port_name}. Port name must contain only alphanumeric lowercase characters and hyphens, and may not start or end with a hyphen.")
@@ -209,7 +209,7 @@ def add_port(port_name, github_username, github_repo_name, ref=None, latest=Fals
         json.dump(vcpkg_json_data, f, indent=2)
 
     # Get the latest commit sha if ref is not provided
-    if not ref:
+    if not ref and not latest:
         commit_info = get_latest_commit_info(
             f'https://github.com/{github_username}/{github_repo_name}')
         ref = commit_info['sha']
@@ -316,12 +316,12 @@ def main():
         "github_path", help="The GitHub path (username/repo) for the package.")
     add_parser.add_argument(
         "--ref", default=None, help="A specific Git ref (branch, tag, or commit) to add.")
-    add_parser.add_argument("--dependencies", "--deps",
-                            default="", help="Comma-separated list of dependencies.")
     add_parser.add_argument(
         "--latest", action="store_true",
         help="Use vcpkg_from_github with HEAD_REF to always get the latest version from the specified branch or the provided ref."
     )
+    add_parser.add_argument("--dependencies", "--deps",
+                            default="", help="Comma-separated list of dependencies.")
 
     # update command
     update_parser = subparsers.add_parser(
@@ -340,9 +340,8 @@ def main():
     elif args.command == "remove":
         remove_port(args.port_name)
     elif args.command == "add":
-        github_username, github_repo_name = args.github_path.split("/")
-        add_port(args.port_name, github_username,
-                 github_repo_name, ref=args.ref, dependencies=args.dependencies)
+        add_port(args.port_name, *args.github_path.split("/"),
+                 ref=args.ref, latest=args.latest, dependencies=args.dependencies)
     elif args.command == "update":
         github_username, github_repo_name = args.github_path.split("/")
         update_port(args.port_name, github_username,
