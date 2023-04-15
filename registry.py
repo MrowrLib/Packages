@@ -164,7 +164,7 @@ def get_github_repo_data(username, repo_name):
     return data
 
 
-def add_port(port_name, github_username, github_repo_name, ref=None):
+def add_port(port_name, github_username, github_repo_name, ref=None, dependencies=""):
     if port_exists(port_name):
         print(f"Port already added: {port_name}")
         return
@@ -191,6 +191,7 @@ def add_port(port_name, github_username, github_repo_name, ref=None):
     port_path.mkdir(parents=True)
 
     # Create vcpkg.json
+    additional_dependencies = dependencies.split(",") if dependencies else []
     vcpkg_json_data = {
         "name": port_name,
         "version-string": version_string,
@@ -198,7 +199,8 @@ def add_port(port_name, github_username, github_repo_name, ref=None):
         "supports": ["x86-windows", "x64-windows"],
         "dependencies": [
             {"name": "vcpkg-cmake", "host": True},
-            {"name": "vcpkg-cmake-config", "host": True}
+            {"name": "vcpkg-cmake-config", "host": True},
+            *additional_dependencies
         ]
     }
     with open(port_path / "vcpkg.json", "w") as f:
@@ -303,6 +305,8 @@ def main():
         "github_path", help="The GitHub path (username/repo) for the package.")
     add_parser.add_argument(
         "--ref", default=None, help="A specific Git ref (branch, tag, or commit) to add.")
+    add_parser.add_argument("--dependencies", "--deps",
+                            default="", help="Comma-separated list of dependencies.")
 
     # update command
     update_parser = subparsers.add_parser(
@@ -323,7 +327,7 @@ def main():
     elif args.command == "add":
         github_username, github_repo_name = args.github_path.split("/")
         add_port(args.port_name, github_username,
-                 github_repo_name, ref=args.ref)
+                 github_repo_name, ref=args.ref, dependencies=args.dependencies)
     elif args.command == "update":
         github_username, github_repo_name = args.github_path.split("/")
         update_port(args.port_name, github_username,
