@@ -196,7 +196,6 @@ def add_port(port_name, github_username, github_repo_name, ref=None, dependencie
         "name": port_name,
         "version-string": version_string,
         "description": description,
-        "supports": ["x86-windows", "x64-windows"],
         "dependencies": [
             {"name": "vcpkg-cmake", "host": True},
             {"name": "vcpkg-cmake-config", "host": True},
