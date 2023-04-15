@@ -16,8 +16,7 @@ def port_exists(port_name):
 
 def get_latest_commit_info(repo_url):
     api_url = repo_url.replace(
-        'github.com', 'api.github.com/repos') + '/commits/main'
-    print(f"Getting latest commit info from {api_url}")
+        'github.com', 'api.github.com/repos') + f"/commits/main"
     response = urlopen(api_url)
     data = json.loads(response.read().decode('utf-8'))
     return data
@@ -126,11 +125,13 @@ def process_port(port_name):
     subprocess.run(['git', 'add', 'versions'])
     subprocess.run(['git', 'commit', '--amend', '--no-edit',
                    '-m', f'{port_name} --> {new_version}'])
-    subprocess.run(['git', 'push', 'origin', 'main'])
 
 
 def list_ports():
     ports_path = Path("ports")
+    if not ports_path.exists():
+        print("No ports found.")
+        return
     for port_dir in ports_path.iterdir():
         if port_dir.is_dir():
             port_name = port_dir.name
@@ -177,7 +178,7 @@ def add_port(port_name, github_username, github_repo_name, ref=None):
 
     # Get the latest commit info
     commit_info = get_latest_commit_info(
-        github_username, github_repo_name, ref)
+        f"https://github.com/{github_username}/{github_repo_name}")
     commit_date = commit_info["commit"]["committer"]["date"][:10]
     commit_sha = commit_info["sha"]
 
@@ -270,27 +271,43 @@ vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/{github_repo_name})
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="vcpkg registry manager (version 0.1)")
-    subparsers = parser.add_subparsers(dest="command", required=True)
+    if len(sys.argv) == 1:
+        sys.argv.append("--help")
 
-    parser_list = subparsers.add_parser(
-        "list", help="List all ports with their current version.")
-    parser_remove = subparsers.add_parser(
-        "remove", help="Remove a port from the registry.")
-    parser_remove.add_argument(
-        "port_name", help="Name of the port to remove.")
-    parser_add = subparsers.add_parser(
-        "add", help="Add a new port to the registry.")
-    parser_add.add_argument("port_name", help="Name of the port to create.")
-    parser_add.add_argument(
-        "github_repo", help="GitHub repository in the format [user]/[repo].")
-    parser_add.add_argument(
-        "--ref", default=None, help="Reference to use for the port (default: latest commit).")
-    parser_update = subparsers.add_parser(
-        "update", help="Update a specific port or all ports.")
-    parser_update.add_argument("port_name", nargs="?", default=None,
-                               help="Name of the port to update (default: update all).")
+    parser = argparse.ArgumentParser(
+        description="A simple package registry for vcpkg.")
+    subparsers = parser.add_subparsers(
+        dest="command", help="Subcommand to run: list, remove, add, or update")
+
+    # list command
+    subparsers.add_parser(
+        "list", help="List all the available packages in the registry.")
+
+    # remove command
+    remove_parser = subparsers.add_parser(
+        "remove", help="Remove a package from the registry.")
+    remove_parser.add_argument(
+        "port_name", help="The name of the package to remove.")
+
+    # add command
+    add_parser = subparsers.add_parser(
+        "add", help="Add a new package to the registry.")
+    add_parser.add_argument(
+        "port_name", help="The name of the package to add.")
+    add_parser.add_argument(
+        "github_path", help="The GitHub path (username/repo) for the package.")
+    add_parser.add_argument("ref", nargs="?", default=None,
+                            help="A specific Git ref (branch, tag, or commit) to add.")
+
+    # update command
+    update_parser = subparsers.add_parser(
+        "update", help="Update an existing package in the registry.")
+    update_parser.add_argument(
+        "port_name", help="The name of the package to update.")
+    update_parser.add_argument(
+        "github_path", help="The GitHub path (username/repo) for the package.")
+    update_parser.add_argument("ref", nargs="?", default=None,
+                               help="A specific Git ref (branch, tag, or commit) to update.")
 
     args = parser.parse_args()
 
@@ -299,16 +316,13 @@ def main():
     elif args.command == "remove":
         remove_port(args.port_name)
     elif args.command == "add":
-        github_info = args.github_repo.split("/")
-        github_username = github_info[0]
-        github_repo_name = github_info[1]
+        github_username, github_repo_name = args.github_path.split("/")
         add_port(args.port_name, github_username,
-                 github_repo_name, args.ref)
+                 github_repo_name, ref=args.ref)
     elif args.command == "update":
-        if args.port_name:
-            process_port(args.port_name)
-        else:
-            update_all_ports()
+        github_username, github_repo_name = args.github_path.split("/")
+        update_port(args.port_name, github_username,
+                    github_repo_name, ref=args.ref)
 
 
 if __name__ == "__main__":
