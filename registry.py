@@ -217,16 +217,17 @@ def add_port(port_name, github_username, github_repo_name, ref=None, dependencie
     if latest:
         vcpkg_from = "vcpkg_from_github"
         head_ref = f"HEAD_REF {ref}" if ref else "HEAD_REF main"
+        vcpkg_url = f"REPO {github_username}/{github_repo_name}"
     else:
         vcpkg_from = "vcpkg_from_git"
         head_ref = f"REF {ref}" if ref else ""
+        vcpkg_url = f"URL https://github.com/{github_username}/{github_repo_name}.git"
 
-    # Create the portfile.cmake
     # Create portfile.cmake
     portfile_content = f"""\
 {vcpkg_from}(
     OUT_SOURCE_PATH SOURCE_PATH
-    URL https://github.com/{github_username}/{github_repo_name}.git
+    {vcpkg_url}
     {head_ref}
 )
 
