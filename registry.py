@@ -260,12 +260,12 @@ vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/{github_repo_name})
 
     # Add the port to versions/baseline.json
     baseline_path = versions_dir / "baseline.json"
-    baseline_data = {}
+    baseline_data = {"default": {}}
     if baseline_path.exists():
         with open(baseline_path, "r") as f:
             baseline_data = json.load(f)
 
-    baseline_data[port_name] = {
+    baseline_data["default"][port_name] = {
         "baseline": f"{commit_date}-{commit_sha[:7]}",
         "port-version": 0
     }
