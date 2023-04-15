@@ -252,7 +252,7 @@ vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/{github_repo_name})
     }
 
     port_versions_path = versions_dir / \
-        port_name[0].lower() + "-" / f"{port_name}.json"
+        f"{port_name[0].lower()}-" / f"{port_name}.json"
     port_versions_path.parent.mkdir(parents=True, exist_ok=True)
 
     with open(port_versions_path, "w") as f:
