@@ -1,5 +1,4 @@
 import sys
-import os
 import re
 import json
 import subprocess
@@ -164,7 +163,11 @@ def get_github_repo_data(username, repo_name):
     return data
 
 
-def add_port(port_name, github_username, github_repo_name, ref=None, dependencies=""):
+def add_port(port_name, github_username, github_repo_name, ref=None, latest=False):
+    if not re.match(r"^[a-z0-9]+(-[a-z0-9]+)*$", port_name):
+        print(
+            f"Invalid port name: {port_name}. Port name must contain only alphanumeric lowercase characters and hyphens, and may not start or end with a hyphen.")
+        return
     if port_exists(port_name):
         print(f"Port already added: {port_name}")
         return
@@ -211,11 +214,20 @@ def add_port(port_name, github_username, github_repo_name, ref=None, dependencie
             f'https://github.com/{github_username}/{github_repo_name}')
         ref = commit_info['sha']
 
+    if latest:
+        vcpkg_from = "vcpkg_from_github"
+        head_ref = f"HEAD_REF {ref}" if ref else "HEAD_REF main"
+    else:
+        vcpkg_from = "vcpkg_from_git"
+        head_ref = f"REF {ref}" if ref else ""
+
     # Create the portfile.cmake
-    portfile_content = f"""vcpkg_from_git(
+    # Create portfile.cmake
+    portfile_content = f"""\
+{vcpkg_from}(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://github.com/{github_username}/{github_repo_name}.git
-    REF {ref}
+    {head_ref}
 )
 
 vcpkg_cmake_configure(
@@ -306,6 +318,10 @@ def main():
         "--ref", default=None, help="A specific Git ref (branch, tag, or commit) to add.")
     add_parser.add_argument("--dependencies", "--deps",
                             default="", help="Comma-separated list of dependencies.")
+    add_parser.add_argument(
+        "--latest", action="store_true",
+        help="Use vcpkg_from_github with HEAD_REF to always get the latest version from the specified branch or the provided ref."
+    )
 
     # update command
     update_parser = subparsers.add_parser(
