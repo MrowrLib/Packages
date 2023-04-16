@@ -5,7 +5,6 @@ import json
 import re
 from pathlib import Path
 from urllib.request import urlopen
-from typing import List
 
 
 def port_exists(port_name: str) -> bool:
@@ -16,8 +15,10 @@ def check_port_name_validity(port_name: str) -> bool:
     return re.compile("^[a-z0-9]+(-[a-z0-9]+)*$").match(port_name)
 
 
-def git(args: List, working_dir: str = None) -> str:
-    print(f"git {' '.join(args)}")
+def git(args: list, working_dir: str = None) -> str:
+    args = [str(arg) for arg in args]
+    text_args = [f'"{arg}"' if " " in arg else arg for arg in args]
+    print(f"git {' '.join(text_args)}")
     return subprocess.run(
         ["git"] + args,
         stdout=subprocess.PIPE,
@@ -97,7 +98,7 @@ def create_portfile_contents(port_name: str, library_name: str, github_user: str
         return create_portfile_contents_vcpkg_from_git(port_name, library_name, github_user, github_repo, ref)
 
 
-def create_vcpkg_json_dict(port_name: str, port_description: str, github_user: str, github_repo: str, version_string: str, dependencies: List) -> dict:
+def create_vcpkg_json_dict(port_name: str, port_description: str, github_user: str, github_repo: str, version_string: str, dependencies: list) -> dict:
     vcpkg_json = {
         "name": port_name,
         "version-string": version_string,
@@ -110,7 +111,7 @@ def create_vcpkg_json_dict(port_name: str, port_description: str, github_user: s
     return vcpkg_json
 
 
-def add_port(port_name: str, library_name: str, github_user: str, github_repo: str, latest: bool, ref: str, dependencies: List) -> None:
+def add_port(port_name: str, library_name: str, github_user: str, github_repo: str, latest: bool, ref: str, dependencies: list) -> None:
     if port_exists(port_name):
         print(f"Port {port_name} already exists.")
         sys.exit(1)
@@ -145,17 +146,26 @@ def add_port(port_name: str, library_name: str, github_user: str, github_repo: s
     # Create the port directory
     ports_dir = Path("ports")
     port_dir = ports_dir / port_name
-    port_dir.mkdir(exist_ok=True, parents=True)
+    if not port_dir.exists():
+        print(f"Creating {port_dir}")
+        port_dir.mkdir(exist_ok=True, parents=True)
 
     # Create the version directory
     versions_dir = Path("versions")
+    if not versions_dir.exists():
+        print(f"Creating {versions_dir}")
+        versions_dir.mkdir(exist_ok=True, parents=True)
     version_dir = versions_dir / f"{port_name[0].lower()}-"
-    version_dir.mkdir(exist_ok=True, parents=True)
+    if not version_dir.exists():
+        print(f"Creating {version_dir}")
+        version_dir.mkdir(exist_ok=True, parents=True)
 
     # Create the portfile.cmake
     portfile_contents = create_portfile_contents(
         port_name, library_name, github_user, github_repo, latest, ref)
-    with open(port_dir / "portfile.cmake", "w") as f:
+    portfile_path = port_dir / "portfile.cmake"
+    print(f"Writing {portfile_path}")
+    with open(portfile_path, "w") as f:
         f.write(portfile_contents)
 
     # Create the vcpkg.json
@@ -168,9 +178,10 @@ def add_port(port_name: str, library_name: str, github_user: str, github_repo: s
         json.dump(vcpkg_json_dict, f, indent=2)
 
     # Add the port to git
-    git(["add", "ports"])
+    git(["add", f"ports/{port_name}"])
     git(["commit", "-m", f"Add new port {port_name}"])
     git_tree_sha = get_git_tree_sha(port_name)
+    print(f"Git tree SHA: {git_tree_sha}")
 
     # Create the versions/*-/port-name.json file
     version_json = {
@@ -190,18 +201,21 @@ def add_port(port_name: str, library_name: str, github_user: str, github_repo: s
     baseline_path = versions_dir / "baseline.json"
     baseline_data = {"default": {}}
     if baseline_path.exists():
+        print(f"Updating {baseline_path}")
         with open(baseline_path, "r") as f:
             baseline_data = json.load(f)
+    else:
+        print(f"Creating {baseline_path}")
     baseline_data["default"][port_name] = {
         "baseline": version_string,
         "port-version": 0
     }
-    print(f"Writing {baseline_path}")
     with open(baseline_path, "w") as f:
         json.dump(baseline_data, f, indent=2)
 
     # Add and commit all the things
-    git(["add", "versions"])
+    git(["add", version_file_path])
+    git(["add", baseline_path])
     git(["commit", "--amend", "--no-edit"])
 
     print(f"Successfully added port '{port_name}'")
@@ -301,13 +315,19 @@ def update_port(port_name: str) -> None:
     with open(vcpgk_json_path, "w") as f:
         json.dump(vcpkg_json_data, f, indent=2)
 
-    # Update the existing version .json file with the updated version-string
+    # Add the port to git
+    git(["add", f"ports/{port_name}"])
+    git(["commit", "-m", f"Update {port_name} to {version_string}"])
+    git_tree_sha = get_git_tree_sha(port_name)
+    print(f"Git tree SHA: {git_tree_sha}")
+
+    # Add the new version to the versions .json file
     version_file_path = version_dir / f"{port_name}.json"
     with open(version_file_path, "r") as f:
         version_json_data = json.load(f)
     version_json_data["versions"].append({
         "version-string": version_string,
-        "git-tree": get_git_tree_sha(port_name)
+        "git-tree": git_tree_sha
     })
     print(f"Updating {version_file_path}")
     with open(version_file_path, "w") as f:
@@ -323,9 +343,9 @@ def update_port(port_name: str) -> None:
         json.dump(baseline_data, f, indent=2)
 
     # Add and commit all the things
-    git(["add", "ports"])
-    git(["add", "versions"])
-    git(["commit", "-m", f"Update port {port_name} to {version_string}"])
+    git(["add", version_file_path])
+    git(["add", baseline_path])
+    git(["commit", "--amend", "--no-edit"])
 
     print(f"Succesfully updated port '{port_name}'")
 
