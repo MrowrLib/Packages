@@ -99,13 +99,13 @@ file(REMOVE_RECURSE "${{CURRENT_PACKAGES_DIR}}/debug" "${{CURRENT_PACKAGES_DIR}}
 
 
 def create_portfile_contents_download_latest(port_name: str, library_name: str, github_user: str, github_repo: str, ref: str) -> str:
-    return f"""file(DOWNLOAD "https://api.github.com/repos/{github_user}/{github_repo}/tarball/{ref or 'main'}" ${{DOWNLOADS}}/archive.tar.gz
+    return f"""file(DOWNLOAD "https://api.github.com/repos/{github_user}/{github_repo}/tarball/{ref or 'main'}" ${{DOWNLOADS}}/{port_name}-latest.tar.gz
     SHOW_PROGRESS
 )
 
 vcpkg_extract_source_archive(
     SOURCE_PATH
-    ARCHIVE ${{DOWNLOADS}}/archive.tar.gz
+    ARCHIVE ${{DOWNLOADS}}/{port_name}-latest.tar.gz
 )
 
 vcpkg_cmake_configure(
@@ -190,7 +190,7 @@ def add_port(port_name: str, library_name: str, github_user: str, github_repo: s
         f.write(portfile_contents)
 
     # Create the vcpkg.json
-    version_string = f"{latest_commit_date}-{latest_commit_sha[:7]}"
+    version_string = "latest" if latest else f"{latest_commit_date}-{latest_commit_sha[:7]}"
     vcpkg_json_dict = create_vcpkg_json_dict(
         port_name, repo_description, github_user, github_repo, version_string, dependencies)
     vcpkg_json_path = get_vcpkg_json_path(port_name)
