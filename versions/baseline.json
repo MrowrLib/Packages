@@ -3,6 +3,10 @@
     "mrowr-string-format": {
       "baseline": "2023-04-16-e51a3d2",
       "port-version": 0
+    },
+    "mrowr-log": {
+      "baseline": "2023-04-16-0963e3c",
+      "port-version": 0
     }
   }
 }

@@ -1,0 +1,15 @@
+{
+  "name": "mrowr-log",
+  "version-string": "2023-04-16-0963e3c",
+  "description": "_Log_(\"Easiest Logging Ever\")",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}
