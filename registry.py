@@ -247,7 +247,7 @@ def update_port(port_name: str) -> None:
     ports_dir = Path("ports")
     port_dir = ports_dir / port_name
     versions_dir = Path("versions")
-    version_dir = versions_dir / f"{port_name[0].lower()}-" / port_name
+    version_dir = versions_dir / f"{port_name[0].lower()}-"
 
     # Read the current portfile
     with open(port_dir / "portfile.cmake", "r") as f:
@@ -264,16 +264,16 @@ def update_port(port_name: str) -> None:
     repo_url = url_pattern.search(portfile_contents).group(1)
     github_user, github_repo = repo_url.split("/")[-2:]
 
-    # Get the REF from the portfile
-    ref_pattern = re.compile(r'REF\s+([\w\-]+)')
-    ref = ref_pattern.search(portfile_contents).group(1)
-
     # Get the latest commit info
     latest_commit_info = get_github_latest_commit_info(
-        github_user, github_repo, ref)
+        github_user, github_repo, None)
     latest_commit_date = latest_commit_info["commit"]["committer"]["date"][:10]
     latest_commit_sha = latest_commit_info["sha"]
     latest_commit_message = latest_commit_info["commit"]["message"]
+
+    # Get the REF from the portfile
+    ref_pattern = re.compile(r'REF\s+([\w\-]+)')
+    ref = ref_pattern.search(portfile_contents).group(1)
 
     print(f"GitHub repository URL: {repo_url}")
     print(f"Latest commit: {latest_commit_sha}")
@@ -286,7 +286,9 @@ def update_port(port_name: str) -> None:
     # Create the new portfile with the updated REF
     new_portfile_contents = portfile_contents.replace(
         f"REF {ref}", f"REF {latest_commit_sha}")
-    with open(port_dir / "portfile.cmake", "w") as f:
+    portfile_path = port_dir / "portfile.cmake"
+    print(f"Updating {portfile_path}")
+    with open(portfile_path, "w") as f:
         f.write(new_portfile_contents)
 
     # Create the new vcpkg.json with the updated version-string
@@ -294,17 +296,21 @@ def update_port(port_name: str) -> None:
         vcpkg_json_data = json.load(f)
     version_string = f"{latest_commit_date}-{latest_commit_sha[:7]}"
     vcpkg_json_data["version-string"] = version_string
-    with open(port_dir / "vcpkg.json", "w") as f:
+    vcpgk_json_path = port_dir / "vcpkg.json"
+    print(f"Updating {vcpgk_json_path}")
+    with open(vcpgk_json_path, "w") as f:
         json.dump(vcpkg_json_data, f, indent=2)
 
     # Create the new version.json with the updated version-string
-    with open(version_dir / f"{port_name}.json", "r") as f:
+    version_file_path = version_dir / f"{port_name}.json"
+    with open(version_file_path, "r") as f:
         version_json_data = json.load(f)
     version_json_data["versions"].append({
         "version-string": version_string,
         "git-tree": get_git_tree_sha(port_name)
     })
-    with open(version_dir / f"{port_name}.json", "w") as f:
+    print(f"Updating {version_file_path}")
+    with open(version_file_path, "w") as f:
         json.dump(version_json_data, f, indent=2)
 
     # Add and commit all the things
