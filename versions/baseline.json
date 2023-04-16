@@ -1,8 +1,12 @@
 {
-    "default": {
-        "mrowr-string-format": {
-            "baseline": "2023-04-16-e51a3d2",
-            "port-version": 0
-        }
+  "default": {
+    "mrowr-string-format": {
+      "baseline": "2023-04-16-e51a3d2",
+      "port-version": 0
+    },
+    "mrowr-log": {
+      "baseline": "2023-04-16-8425d07",
+      "port-version": 0
     }
+  }
 }
