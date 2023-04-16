@@ -200,7 +200,7 @@ def add_port(port_name: str, library_name: str, github_user: str, github_repo: s
 
     # Add and commit all the things
     git(["add", "versions"])
-    git(["commit", "-m", "--amend", "--no-edit"])
+    git(["commit", "--amend", "--no-edit"])
 
     print(f"Successfully added port '{port_name}'")
 
