@@ -15,6 +15,36 @@ def check_port_name_validity(port_name: str) -> bool:
     return re.compile("^[a-z0-9]+(-[a-z0-9]+)*$").match(port_name)
 
 
+def get_version_folder_path(port_name: str) -> Path:
+    return Path("versions") / f"{port_name[0].lower()}-"
+
+
+def get_version_file_path(port_name: str) -> Path:
+    return get_version_folder_path(port_name) / f"{port_name}.json"
+
+
+def get_port_folder_path(port_name: str) -> Path:
+    return Path("ports") / port_name
+
+
+def get_portfile_path(port_name: str) -> Path:
+    return get_port_folder_path(port_name) / "portfile.cmake"
+
+
+def get_vcpkg_json_path(port_name: str) -> Path:
+    return get_port_folder_path(port_name) / "vcpkg.json"
+
+
+def get_baseline_path() -> Path:
+    return Path("versions") / "baseline.json"
+
+
+def mkdir(folder: Path) -> None:
+    if not folder.exists():
+        print(f"Creating {folder}")
+        folder.mkdir(exist_ok=True, parents=True)
+
+
 def git(args: list, working_dir: str = None) -> str:
     args = [str(arg) for arg in args]
     text_args = [f'"{arg}"' if " " in arg else arg for arg in args]
@@ -144,26 +174,17 @@ def add_port(port_name: str, library_name: str, github_user: str, github_repo: s
         ref = latest_commit_sha
 
     # Create the port directory
-    ports_dir = Path("ports")
-    port_dir = ports_dir / port_name
-    if not port_dir.exists():
-        print(f"Creating {port_dir}")
-        port_dir.mkdir(exist_ok=True, parents=True)
+    port_dir = get_port_folder_path(port_name)
+    mkdir(port_dir)
 
     # Create the version directory
-    versions_dir = Path("versions")
-    if not versions_dir.exists():
-        print(f"Creating {versions_dir}")
-        versions_dir.mkdir(exist_ok=True, parents=True)
-    version_dir = versions_dir / f"{port_name[0].lower()}-"
-    if not version_dir.exists():
-        print(f"Creating {version_dir}")
-        version_dir.mkdir(exist_ok=True, parents=True)
+    version_dir = get_version_folder_path(port_name)
+    mkdir(version_dir)
 
     # Create the portfile.cmake
     portfile_contents = create_portfile_contents(
         port_name, library_name, github_user, github_repo, latest, ref)
-    portfile_path = port_dir / "portfile.cmake"
+    portfile_path = get_portfile_path(port_name)
     print(f"Writing {portfile_path}")
     with open(portfile_path, "w") as f:
         f.write(portfile_contents)
@@ -172,7 +193,7 @@ def add_port(port_name: str, library_name: str, github_user: str, github_repo: s
     version_string = f"{latest_commit_date}-{latest_commit_sha[:7]}"
     vcpkg_json_dict = create_vcpkg_json_dict(
         port_name, repo_description, github_user, github_repo, version_string, dependencies)
-    vcpkg_json_path = port_dir / "vcpkg.json"
+    vcpkg_json_path = get_vcpkg_json_path(port_name)
     print(f"Writing {vcpkg_json_path}")
     with open(vcpkg_json_path, "w") as f:
         json.dump(vcpkg_json_dict, f, indent=2)
@@ -192,13 +213,13 @@ def add_port(port_name: str, library_name: str, github_user: str, github_repo: s
             }
         ]
     }
-    version_file_path = version_dir / f"{port_name}.json"
+    version_file_path = get_version_file_path(port_name)
     print(f"Writing {version_file_path}")
     with open(version_file_path, "w") as f:
         json.dump(version_json, f, indent=2)
 
     # Add the port to the baseline versions
-    baseline_path = versions_dir / "baseline.json"
+    baseline_path = get_baseline_path()
     baseline_data = {"default": {}}
     if baseline_path.exists():
         print(f"Updating {baseline_path}")
@@ -237,18 +258,29 @@ def list_ports() -> None:
 
 
 def remove_port(port_name: str) -> None:
-    git(["rm", "-r", f"ports/{port_name}"])
-    versions_path = Path("versions") / \
-        port_name[0].lower() / f"{port_name}.json"
-    git(["rm", str(versions_path)])
-    with open("versions/baseline.json", "r") as f:
+    print(f"Removing port '{port_name}'")
+
+    git(["rm", "-r", get_port_folder_path(port_name)])
+    git(["rm", get_version_file_path(port_name)])
+
+    versions_folder_path = get_version_folder_path(port_name)
+    if not any(versions_folder_path.iterdir()):
+        print(f"Removing {versions_folder_path}")
+        versions_folder_path.rmdir()
+
+    baseline_path = get_baseline_path()
+    with open(baseline_path, "r") as f:
         baseline_data = json.load(f)
-    del baseline_data[port_name]
-    with open("versions/baseline.json", "w") as f:
-        json.dump(baseline_data, f, indent=2)
-    git(["add", "versions/baseline.json"])
-    git(["commit", "-m", f"Remove {port_name}"])
-    print(f"Port {port_name} removed.")
+    if baseline_data.get("default", {}).get(port_name):
+        del baseline_data["default"][port_name]
+        print(f"Updating {baseline_path}")
+        with open(baseline_path, "w") as f:
+            json.dump(baseline_data, f, indent=2)
+
+    git(["add", baseline_path])
+    git(["commit", "-m", f"Removed {port_name}"])
+
+    print(f"Succesfully removed port '{port_name}'")
 
 
 def update_port(port_name: str) -> None:
@@ -257,11 +289,6 @@ def update_port(port_name: str) -> None:
         sys.exit(1)
 
     print(f"Updating port '{port_name}'")
-
-    ports_dir = Path("ports")
-    port_dir = ports_dir / port_name
-    versions_dir = Path("versions")
-    version_dir = versions_dir / f"{port_name[0].lower()}-"
 
     # Read the current portfile
     with open(port_dir / "portfile.cmake", "r") as f:
@@ -300,17 +327,17 @@ def update_port(port_name: str) -> None:
     # Update the existing portfile with the updated REF
     portfile_contents = portfile_contents.replace(
         f"REF {ref}", f"REF {latest_commit_sha}")
-    portfile_path = port_dir / "portfile.cmake"
+    portfile_path = get_portfile_path(port_name)
     print(f"Updating {portfile_path}")
     with open(portfile_path, "w") as f:
         f.write(portfile_contents)
 
     # Update the existing vcpkg.json with the updated version-string
-    with open(port_dir / "vcpkg.json", "r") as f:
+    vcpgk_json_path = get_vcpkg_json_path(port_name)
+    with open(vcpgk_json_path, "r") as f:
         vcpkg_json_data = json.load(f)
     version_string = f"{latest_commit_date}-{latest_commit_sha[:7]}"
     vcpkg_json_data["version-string"] = version_string
-    vcpgk_json_path = port_dir / "vcpkg.json"
     print(f"Updating {vcpgk_json_path}")
     with open(vcpgk_json_path, "w") as f:
         json.dump(vcpkg_json_data, f, indent=2)
@@ -322,7 +349,7 @@ def update_port(port_name: str) -> None:
     print(f"Git tree SHA: {git_tree_sha}")
 
     # Add the new version to the versions .json file
-    version_file_path = version_dir / f"{port_name}.json"
+    version_file_path = get_version_file_path(port_name)
     with open(version_file_path, "r") as f:
         version_json_data = json.load(f)
     version_json_data["versions"].append({
@@ -334,7 +361,7 @@ def update_port(port_name: str) -> None:
         json.dump(version_json_data, f, indent=2)
 
     # Update the baseline version
-    baseline_path = versions_dir / "baseline.json"
+    baseline_path = get_baseline_path()
     with open(baseline_path, "r") as f:
         baseline_data = json.load(f)
     baseline_data["default"][port_name]["baseline"] = version_string
