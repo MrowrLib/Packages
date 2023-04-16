@@ -291,7 +291,8 @@ def update_port(port_name: str) -> None:
     print(f"Updating port '{port_name}'")
 
     # Read the current portfile
-    with open(port_dir / "portfile.cmake", "r") as f:
+    portfile_path = get_portfile_path(port_name)
+    with open(portfile_path, "r") as f:
         portfile_contents = f.read()
 
     # Is the current portfile using vcpkg_from_git or file(DOWNLOAD)?
