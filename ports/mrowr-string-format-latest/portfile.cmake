@@ -1,4 +1,4 @@
-file(DOWNLOAD "https://api.github.com/repos/MrowrLib/MrowrLib/tarball/main" ${DOWNLOADS}/archive.tar.gz
+file(DOWNLOAD "https://api.github.com/repos/MrowrLib/string_format.cpp/tarball/main" ${DOWNLOADS}/archive.tar.gz
     SHOW_PROGRESS
 )
 
