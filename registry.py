@@ -283,15 +283,15 @@ def update_port(port_name: str) -> None:
         print(f"Port {port_name} is already up to date.")
         sys.exit(0)
 
-    # Create the new portfile with the updated REF
-    new_portfile_contents = portfile_contents.replace(
+    # Update the existing portfile with the updated REF
+    portfile_contents = portfile_contents.replace(
         f"REF {ref}", f"REF {latest_commit_sha}")
     portfile_path = port_dir / "portfile.cmake"
     print(f"Updating {portfile_path}")
     with open(portfile_path, "w") as f:
-        f.write(new_portfile_contents)
+        f.write(portfile_contents)
 
-    # Create the new vcpkg.json with the updated version-string
+    # Update the existing vcpkg.json with the updated version-string
     with open(port_dir / "vcpkg.json", "r") as f:
         vcpkg_json_data = json.load(f)
     version_string = f"{latest_commit_date}-{latest_commit_sha[:7]}"
@@ -301,7 +301,7 @@ def update_port(port_name: str) -> None:
     with open(vcpgk_json_path, "w") as f:
         json.dump(vcpkg_json_data, f, indent=2)
 
-    # Create the new version.json with the updated version-string
+    # Update the existing version .json file with the updated version-string
     version_file_path = version_dir / f"{port_name}.json"
     with open(version_file_path, "r") as f:
         version_json_data = json.load(f)
@@ -312,6 +312,15 @@ def update_port(port_name: str) -> None:
     print(f"Updating {version_file_path}")
     with open(version_file_path, "w") as f:
         json.dump(version_json_data, f, indent=2)
+
+    # Update the baseline version
+    baseline_path = versions_dir / "baseline.json"
+    with open(baseline_path, "r") as f:
+        baseline_data = json.load(f)
+    baseline_data["default"][port_name]["baseline"] = version_string
+    print(f"Updating {baseline_path}")
+    with open(baseline_path, "w") as f:
+        json.dump(baseline_data, f, indent=2)
 
     # Add and commit all the things
     git(["add", "ports"])
