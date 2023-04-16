@@ -54,7 +54,7 @@ def get_github_latest_commit_info(github_user: str, github_repo: str, ref: str) 
 def create_portfile_contents_vcpkg_from_git(port_name: str, library_name: str, github_user: str, github_repo: str, ref: str) -> str:
     return f"""vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
-    REPO https://github.com/{github_user}/{github_repo}.git
+    URL https://github.com/{github_user}/{github_repo}.git
     REF {ref}
 )
 
