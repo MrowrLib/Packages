@@ -1,15 +1,11 @@
 import argparse
-import datetime
-import os
 import subprocess
 import sys
 import json
 import re
 from pathlib import Path
 from urllib.request import urlopen
-from typing import Optional
 from typing import List
-import tempfile
 
 
 def port_exists(port_name: str) -> bool:
@@ -59,7 +55,7 @@ def create_portfile_contents_vcpkg_from_git(port_name: str, library_name: str, g
 )
 
 vcpkg_cmake_configure(
-    SOURCE_PATH {{SOURCE_PATH}}
+    SOURCE_PATH ${{SOURCE_PATH}}
 )
 
 vcpkg_cmake_install()
