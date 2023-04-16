@@ -7,10 +7,6 @@
     "mrowr-log": {
       "baseline": "2023-04-16-c67696f",
       "port-version": 0
-    },
-    "mrowr-log-latest": {
-      "baseline": "2023-04-16-c67696f",
-      "port-version": 0
     }
   }
 }
