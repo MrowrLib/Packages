@@ -1,133 +1,211 @@
-import sys
-import re
-import json
-import subprocess
-import datetime
 import argparse
-
-from urllib.request import urlopen
+import datetime
+import os
+import subprocess
+import sys
+import json
+import re
 from pathlib import Path
+from urllib.request import urlopen
+from typing import Optional
+from typing import List
+import tempfile
 
 
-def port_exists(port_name):
+def port_exists(port_name: str) -> bool:
     return (Path("ports") / port_name).exists()
 
 
-def get_latest_commit_info(repo_url):
-    api_url = repo_url.replace(
-        'github.com', 'api.github.com/repos') + f"/commits/main"
-    response = urlopen(api_url)
-    data = json.loads(response.read().decode('utf-8'))
-    return data
+def check_port_name_validity(port_name: str) -> bool:
+    return re.compile("^[a-z0-9]+(-[a-z0-9]+)*$").match(port_name)
 
 
-def update_portfile(port_name, latest_sha):
-    ref_pattern = re.compile(r'(REF\s+)([\w\d]+)')
-    url_pattern = re.compile(r'URL\s+(https://github.com/[\w\-]+/[\w\-]+)')
-    portfile_path = f'ports/{port_name}/portfile.cmake'
-
-    with open(portfile_path, 'r') as f:
-        content = f.read()
-        repo_url = url_pattern.search(content).group(1)
-        current_sha = ref_pattern.search(content).group(2)
-
-    if current_sha == latest_sha:
-        return None
-
-    content = ref_pattern.sub(f'\\1{latest_sha}', content)
-
-    with open(portfile_path, 'w') as f:
-        f.write(content)
-
-    return latest_sha
+def git(args: List, working_dir: str = None) -> str:
+    print(f"git {' '.join(args)}")
+    return subprocess.run(
+        ["git"] + args,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        cwd=working_dir,
+    ).stdout
 
 
 def get_git_tree_sha(port_name):
-    output = subprocess.check_output(
-        ['git', 'rev-parse', f'HEAD:ports/{port_name}'])
-    return output.decode('utf-8').strip()
+    return git(['rev-parse', f'HEAD:ports/{port_name}']).strip()
 
 
-def update_versions(port_name, latest_sha, update_vcpkg_json=True):
-    short_sha = latest_sha[:7]
-    version_date = datetime.date.today().strftime('%Y-%m-%d')
-    new_version = f'{version_date}-{short_sha}'
-    versions_dir = Path('versions') / \
-        port_name[0].lower() / f'{port_name}.json'
+def get_github_repo_info(username: str, repo_name: str) -> dict:
+    api_url = f"https://api.github.com/repos/{username}/{repo_name}"
+    print(f"GET {api_url}")
+    response = urlopen(api_url)
+    return json.loads(response.read().decode("utf-8"))
 
-    with open(versions_dir, 'r') as f:
-        versions_data = json.load(f)
 
-    # Update the versions JSON
-    new_entry = {
-        "version": new_version,
-        "git-tree": get_git_tree_sha(port_name)
+def get_github_latest_commit_info(github_user: str, github_repo: str, ref: str) -> dict:
+    repo_url = f"https://github.com/{github_user}/{github_repo}"
+    api_url = repo_url.replace(
+        'github.com', 'api.github.com/repos') + f"/commits/{ref or 'main'}"
+    print(f"GET {api_url}")
+    response = urlopen(api_url)
+    return json.loads(response.read().decode('utf-8'))
+
+
+def create_portfile_contents_vcpkg_from_git(port_name: str, library_name: str, github_user: str, github_repo: str, ref: str) -> str:
+    return f"""vcpkg_from_git(
+    OUT_SOURCE_PATH SOURCE_PATH
+    REPO https://github.com/{github_user}/{github_repo}.git
+    REF {ref}
+)
+
+vcpkg_cmake_configure(
+    SOURCE_PATH {{SOURCE_PATH}}
+)
+
+vcpkg_cmake_install()
+
+vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/{library_name})
+"""
+
+
+def create_portfile_contents_download_latest(port_name: str, library_name: str, github_user: str, github_repo: str, ref: str) -> str:
+    return f"""file(DOWNLOAD "https://api.github.com/repos/{github_user}/{github_repo}/tarball/{ref or 'main'}" ${{DOWNLOADS}}/archive.tar.gz
+    SHOW_PROGRESS
+)
+
+vcpkg_extract_source_archive(
+    SOURCE_PATH
+    ARCHIVE ${{DOWNLOADS}}/archive.tar.gz
+)
+
+vcpkg_cmake_configure(
+    SOURCE_PATH ${{SOURCE_PATH}}
+)
+
+vcpkg_cmake_install()
+
+vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/{library_name})
+"""
+
+
+def create_portfile_contents(port_name: str, library_name: str, github_user: str, github_repo: str, latest: bool, ref: str) -> str:
+    if latest:
+        return create_portfile_contents_download_latest(port_name, library_name, github_user, github_repo, ref)
+    else:
+        return create_portfile_contents_vcpkg_from_git(port_name, library_name, github_user, github_repo, ref)
+
+
+def create_vcpkg_json_dict(port_name: str, port_description: str, github_user: str, github_repo: str, version_string: str, dependencies: List) -> dict:
+    vcpkg_json = {
+        "name": port_name,
+        "version-string": version_string,
+        "description": port_description,
+        "dependencies": [
+            {"name": "vcpkg-cmake", "host": True},
+            {"name": "vcpkg-cmake-config", "host": True},
+        ]
     }
-    versions_data["versions"].insert(0, new_entry)
-
-    with open(versions_dir, 'w') as f:
-        json.dump(versions_data, f, indent=2)
-
-    if update_vcpkg_json:
-        vcpkg_json_path = f'ports/{port_name}/vcpkg.json'
-        with open(vcpkg_json_path, 'r') as f:
-            vcpkg_json_data = json.load(f)
-        vcpkg_json_data["version-string"] = new_version
-        with open(vcpkg_json_path, 'w') as f:
-            json.dump(vcpkg_json_data, f, indent=2)
-
-    return new_version
+    return vcpkg_json
 
 
-def update_all_ports():
-    ports_dir = Path("ports")
-    for port_dir in ports_dir.iterdir():
-        if not port_dir.is_dir():
-            continue
-        port_name = port_dir.name
-        portfile_path = port_dir / "portfile.cmake"
-        with open(portfile_path, "r") as f:
-            content = f.read()
-        if "vcpkg_from_git" in content:
-            print(f"Updating {port_name}")
-            update_port(port_name)
+def add_port(port_name: str, library_name: str, github_user: str, github_repo: str, latest: bool, ref: str, dependencies: List) -> None:
+    if port_exists(port_name):
+        print(f"Port {port_name} already exists.")
+        sys.exit(1)
+
+    if not check_port_name_validity(port_name):
+        print(f"Invalid port name: {port_name}")
+        sys.exit(1)
+
+    print(f"Adding port '{port_name}'")
+
+    if not library_name:
+        # Helpful convention:
+        # if port_name ends with -latest, make the library_name the port_name without -latest
+        if latest and port_name.endswith("-latest"):
+            library_name = port_name[:-7]
         else:
-            print(f"Skipping {port_name}, not using vcpkg_from_git")
+            library_name = port_name
+
+    # Get repository information
+    repo_info = get_github_repo_info(github_user, github_repo)
+    repo_description = repo_info["description"]
+
+    # Get commit info from either the ref or the latest commit
+    latest_commit_info = get_github_latest_commit_info(
+        github_user, github_repo, ref)
+    latest_commit_date = latest_commit_info["commit"]["committer"]["date"][:10]
+    latest_commit_sha = latest_commit_info["sha"]
+
+    if not latest and not ref:
+        ref = latest_commit_sha
+
+    # Create the port directory
+    ports_dir = Path("ports")
+    port_dir = ports_dir / port_name
+    port_dir.mkdir(exist_ok=True, parents=True)
+
+    # Create the version directory
+    versions_dir = Path("versions")
+    version_dir = versions_dir / f"{port_name[0].lower()}-"
+    version_dir.mkdir(exist_ok=True, parents=True)
+
+    # Create the portfile.cmake
+    portfile_contents = create_portfile_contents(
+        port_name, library_name, github_user, github_repo, latest, ref)
+    with open(port_dir / "portfile.cmake", "w") as f:
+        f.write(portfile_contents)
+
+    # Create the vcpkg.json
+    version_string = f"{latest_commit_date}-{latest_commit_sha[:7]}"
+    vcpkg_json_dict = create_vcpkg_json_dict(
+        port_name, repo_description, github_user, github_repo, version_string, dependencies)
+    vcpkg_json_path = port_dir / "vcpkg.json"
+    print(f"Writing {vcpkg_json_path}")
+    with open(vcpkg_json_path, "w") as f:
+        json.dump(vcpkg_json_dict, f, indent=2)
+
+    # Add the port to git
+    git(["add", "ports"])
+    git(["commit", "-m", f"Add new port {port_name}"])
+    git_tree_sha = get_git_tree_sha(port_name)
+
+    # Create the versions/*-/port-name.json file
+    version_json = {
+        "versions": [
+            {
+                "version-string": version_string,
+                "git-tree": git_tree_sha
+            }
+        ]
+    }
+    version_file_path = version_dir / f"{port_name}.json"
+    print(f"Writing {version_file_path}")
+    with open(version_file_path, "w") as f:
+        json.dump(version_json, f, indent=2)
+
+    # Add the port to the baseline versions
+    baseline_path = versions_dir / "baseline.json"
+    baseline_data = {"default": {}}
+    if baseline_path.exists():
+        with open(baseline_path, "r") as f:
+            baseline_data = json.load(f)
+    baseline_data["default"][port_name] = {
+        "baseline": version_string,
+        "port-version": 0
+    }
+    print(f"Writing {baseline_path}")
+    with open(baseline_path, "w") as f:
+        json.dump(baseline_data, f, indent=2)
+
+    # Add and commit all the things
+    git(["add", "versions"])
+    git(["commit", "-m", "--amend", "--no-edit"])
+
+    print(f"Successfully added port '{port_name}'")
 
 
-def update_port(port_name):
-    print(f"Updating {port_name}")
-
-    portfile_path = f'ports/{port_name}/portfile.cmake'
-    with open(portfile_path, 'r') as f:
-        content = f.read()
-
-    url_pattern = re.compile(r'URL\s+(https://github.com/[\w\-]+/[\w\-]+)')
-    repo_url = url_pattern.search(content).group(1)
-
-    commit_info = get_latest_commit_info(repo_url)
-    latest_sha = commit_info['sha']
-    commit_date = commit_info['commit']['author']['date'][:10]
-    commit_author = commit_info['commit']['author']['name']
-    commit_message = commit_info['commit']['message']
-    print(
-        f"Latest commit: {commit_date} - {commit_author}\n> {commit_message}")
-
-    updated_sha = update_portfile(port_name, latest_sha)
-    if updated_sha is None:
-        print("Already latest commit.")
-        return
-
-    subprocess.run(['git', 'add', f'ports/{port_name}/portfile.cmake'])
-    subprocess.run(['git', 'commit', '-m', f'Updating {port_name} REF'])
-
-    new_version = update_versions(port_name, latest_sha)
-    subprocess.run(['git', 'add', 'versions'])
-    subprocess.run(['git', 'commit', '--amend', '--no-edit',
-                   '-m', f'{port_name} --> {new_version}'])
-
-
-def list_ports():
+def list_ports() -> None:
     ports_path = Path("ports")
     if not ports_path.exists():
         print("No ports found.")
@@ -142,211 +220,149 @@ def list_ports():
             print(f"{port_name} ({version_string})")
 
 
-def remove_port(port_name):
-    subprocess.run(["git", "rm", "-r", f"ports/{port_name}"])
+def remove_port(port_name: str) -> None:
+    git(["rm", "-r", f"ports/{port_name}"])
     versions_path = Path("versions") / \
         port_name[0].lower() / f"{port_name}.json"
-    subprocess.run(["git", "rm", str(versions_path)])
+    git(["rm", str(versions_path)])
     with open("versions/baseline.json", "r") as f:
         baseline_data = json.load(f)
     del baseline_data[port_name]
     with open("versions/baseline.json", "w") as f:
         json.dump(baseline_data, f, indent=2)
-    subprocess.run(["git", "add", "versions/baseline.json"])
-    subprocess.run(["git", "commit", "-m", f"Remove {port_name}"])
+    git(["add", "versions/baseline.json"])
+    git(["commit", "-m", f"Remove {port_name}"])
+    print(f"Port {port_name} removed.")
 
 
-def get_github_repo_data(username, repo_name):
-    api_url = f"https://api.github.com/repos/{username}/{repo_name}"
-    response = urlopen(api_url)
-    data = json.loads(response.read().decode("utf-8"))
-    return data
+def update_port(port_name: str) -> None:
+    if not port_exists(port_name):
+        print(f"Port {port_name} does not exist.")
+        sys.exit(1)
 
+    print(f"Updating port '{port_name}'")
 
-def add_port(port_name, github_username, github_repo_name, ref=None, dependencies="", latest=False):
-    if not re.match(r"^[a-z0-9]+(-[a-z0-9]+)*$", port_name):
-        print(
-            f"Invalid port name: {port_name}. Port name must contain only alphanumeric lowercase characters and hyphens, and may not start or end with a hyphen.")
-        return
-    if port_exists(port_name):
-        print(f"Port already added: {port_name}")
-        return
-
-    # Ensure the ports/ and versions/ directories exist
     ports_dir = Path("ports")
+    port_dir = ports_dir / port_name
     versions_dir = Path("versions")
-    ports_dir.mkdir(exist_ok=True)
-    versions_dir.mkdir(exist_ok=True)
+    version_dir = versions_dir / f"{port_name[0].lower()}-" / port_name
 
-    repo_data = get_github_repo_data(github_username, github_repo_name)
-    description = repo_data["description"]
+    # Read the current portfile
+    with open(port_dir / "portfile.cmake", "r") as f:
+        portfile_contents = f.read()
+
+    # Is the current portfile using vcpkg_from_git or file(DOWNLOAD)?
+    if not "vcpkg_from_git" in portfile_contents:
+        print(f"portfile for port {port_name} does not use vcpkg_from_git")
+        print("Cannot update port that was created using --latest")
+        sys.exit(1)
+
+    # Get the github user and repo from the portfile
+    url_pattern = re.compile(r'URL\s+(https://github.com/[\w\-]+/[\w\-]+)')
+    repo_url = url_pattern.search(portfile_contents).group(1)
+    github_user, github_repo = repo_url.split("/")[-2:]
+
+    # Get the REF from the portfile
+    ref_pattern = re.compile(r'REF\s+([\w\-]+)')
+    ref = ref_pattern.search(portfile_contents).group(1)
 
     # Get the latest commit info
-    commit_info = get_latest_commit_info(
-        f"https://github.com/{github_username}/{github_repo_name}")
-    commit_date = commit_info["commit"]["committer"]["date"][:10]
-    commit_sha = commit_info["sha"]
+    latest_commit_info = get_github_latest_commit_info(
+        github_user, github_repo, ref)
+    latest_commit_date = latest_commit_info["commit"]["committer"]["date"][:10]
+    latest_commit_sha = latest_commit_info["sha"]
+    latest_commit_message = latest_commit_info["commit"]["message"]
 
-    version_string = f"{commit_date}-{commit_sha[:7]}"
+    print(f"GitHub repository URL: {repo_url}")
+    print(f"Latest commit: {latest_commit_sha}")
+    print(f"> {latest_commit_message}")
 
-    # Create port directory
-    port_path = Path(f"ports/{port_name}")
-    port_path.mkdir(parents=True)
+    if latest_commit_sha == ref:
+        print(f"Port {port_name} is already up to date.")
+        sys.exit(0)
 
-    # Create vcpkg.json
-    additional_dependencies = dependencies.split(",") if dependencies else []
-    vcpkg_json_data = {
-        "name": port_name,
-        "version-string": version_string,
-        "description": description,
-        "dependencies": [
-            {"name": "vcpkg-cmake", "host": True},
-            {"name": "vcpkg-cmake-config", "host": True},
-            *additional_dependencies
-        ]
-    }
-    with open(port_path / "vcpkg.json", "w") as f:
+    # Create the new portfile with the updated REF
+    new_portfile_contents = portfile_contents.replace(
+        f"REF {ref}", f"REF {latest_commit_sha}")
+    with open(port_dir / "portfile.cmake", "w") as f:
+        f.write(new_portfile_contents)
+
+    # Create the new vcpkg.json with the updated version-string
+    with open(port_dir / "vcpkg.json", "r") as f:
+        vcpkg_json_data = json.load(f)
+    version_string = f"{latest_commit_date}-{latest_commit_sha[:7]}"
+    vcpkg_json_data["version-string"] = version_string
+    with open(port_dir / "vcpkg.json", "w") as f:
         json.dump(vcpkg_json_data, f, indent=2)
 
-    # Get the latest commit sha if ref is not provided
-    if not ref and not latest:
-        commit_info = get_latest_commit_info(
-            f'https://github.com/{github_username}/{github_repo_name}')
-        ref = commit_info['sha']
+    # Create the new version.json with the updated version-string
+    with open(version_dir / f"{port_name}.json", "r") as f:
+        version_json_data = json.load(f)
+    version_json_data["versions"].append({
+        "version-string": version_string,
+        "git-tree": get_git_tree_sha(port_name)
+    })
+    with open(version_dir / f"{port_name}.json", "w") as f:
+        json.dump(version_json_data, f, indent=2)
 
-    if latest:
-        vcpkg_from = "vcpkg_from_github"
-        head_ref = f"HEAD_REF {ref}" if ref else "HEAD_REF main"
-        vcpkg_url = f"REPO {github_username}/{github_repo_name}"
-    else:
-        vcpkg_from = "vcpkg_from_git"
-        head_ref = f"REF {ref}" if ref else ""
-        vcpkg_url = f"URL https://github.com/{github_username}/{github_repo_name}.git"
+    # Add and commit all the things
+    git(["add", "ports"])
+    git(["add", "versions"])
+    git(["commit", "-m", f"Update port {port_name} to {version_string}"])
 
-    # Create portfile.cmake
-    portfile_content = f"""\
-{vcpkg_from}(
-    OUT_SOURCE_PATH SOURCE_PATH
-    {vcpkg_url}
-    {head_ref}
-)
-
-vcpkg_cmake_configure(
-    SOURCE_PATH {{SOURCE_PATH}}
-)
-
-vcpkg_cmake_install()
-
-vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/{github_repo_name})
-"""
-    with open(ports_dir / port_name / "portfile.cmake", "w") as f:
-        f.write(portfile_content)
-
-    subprocess.run(["git", "add", f"ports/{port_name}"])
-    commit_message = f"Add new port {port_name}"
-    subprocess.run(["git", "commit", "-m", commit_message])
-
-    commit_info = get_latest_commit_info(
-        f"https://github.com/{github_username}/{github_repo_name}")
-    commit_sha = commit_info['sha']
-    commit_date = commit_info['commit']['author']['date'][:10]
-
-    git_tree_sha = get_git_tree_sha(port_name)
-
-    # Create the versions/*-/port-name.json file
-    version_json = {
-        "versions": [
-            {
-                "version-string": f"{commit_date}-{commit_sha[:7]}",
-                "git-tree": git_tree_sha
-            }
-        ]
-    }
-
-    port_versions_path = versions_dir / \
-        f"{port_name[0].lower()}-" / f"{port_name}.json"
-    port_versions_path.parent.mkdir(parents=True, exist_ok=True)
-
-    with open(port_versions_path, "w") as f:
-        json.dump(version_json, f, indent=2)
-
-    # Add the port to versions/baseline.json
-    baseline_path = versions_dir / "baseline.json"
-    baseline_data = {"default": {}}
-    if baseline_path.exists():
-        with open(baseline_path, "r") as f:
-            baseline_data = json.load(f)
-
-    baseline_data["default"][port_name] = {
-        "baseline": f"{commit_date}-{commit_sha[:7]}",
-        "port-version": 0
-    }
-
-    with open(baseline_path, "w") as f:
-        json.dump(baseline_data, f, indent=2)
-
-    subprocess.run(["git", "add", f"versions"])
-    subprocess.run(["git", "commit", "--amend", "--no-edit"])
+    print(f"Succesfully updated port '{port_name}'")
 
 
-def main():
-    if len(sys.argv) == 1:
-        sys.argv.append("--help")
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Manage a vcpkg registry.")
+    subparsers = parser.add_subparsers(dest="command")
 
-    parser = argparse.ArgumentParser(
-        description="A simple package registry for vcpkg.")
-    subparsers = parser.add_subparsers(
-        dest="command", help="Subcommand to run: list, remove, add, or update")
-
-    # list command
-    subparsers.add_parser(
-        "list", help="List all the available packages in the registry.")
-
-    # remove command
-    remove_parser = subparsers.add_parser(
-        "remove", help="Remove a package from the registry.")
-    remove_parser.add_argument(
-        "port_name", help="The name of the package to remove.")
-
-    # add command
     add_parser = subparsers.add_parser(
-        "add", help="Add a new package to the registry.")
+        "add", help="Add a new port to the registry.")
+    add_parser.add_argument("port_name", help="The name of the port to add.")
     add_parser.add_argument(
-        "port_name", help="The name of the package to add.")
+        "github_repo", help="The GitHub repository in the format 'user/repo'.")
+    add_parser.add_argument("--latest", action="store_true",
+                            help="Use the latest version from the GitHub repository.")
     add_parser.add_argument(
-        "github_path", help="The GitHub path (username/repo) for the package.")
-    add_parser.add_argument(
-        "--ref", default=None, help="A specific Git ref (branch, tag, or commit) to add.")
-    add_parser.add_argument(
-        "--latest", action="store_true",
-        help="Use vcpkg_from_github with HEAD_REF to always get the latest version from the specified branch or the provided ref."
-    )
+        "--ref", help="The specific git commit or branch to use for the port.")
     add_parser.add_argument("--dependencies", "--deps",
                             default="", help="Comma-separated list of dependencies.")
+    add_parser.add_argument(
+        "--library", "--lib", help="CMake library name (defaults to provided port name)")
 
-    # update command
+    subparsers.add_parser(
+        "list", help="List all ports in the registry.")
+
+    remove_parser = subparsers.add_parser(
+        "remove", help="Remove a port from the registry.")
+    remove_parser.add_argument(
+        "port_name", help="The name of the port to remove.")
+
     update_parser = subparsers.add_parser(
-        "update", help="Update an existing package in the registry.")
+        "update", help="Update a port in the registry.")
     update_parser.add_argument(
-        "port_name", help="The name of the package to update.")
+        "port_name", help="The name of the port to update.")
     update_parser.add_argument(
-        "github_path", help="The GitHub path (username/repo) for the package.")
-    update_parser.add_argument("ref", nargs="?", default=None,
-                               help="A specific Git ref (branch, tag, or commit) to update.")
+        "--ref", help="The specific git commit to update the port to use.")
 
     args = parser.parse_args()
 
-    if args.command == "list":
+    if args.command == "add":
+        dependencies = []
+        if args.dependencies:
+            dependencies = args.dependencies.split(",")
+        github_user, github_repo = args.github_repo.split("/")
+        add_port(args.port_name, args.library, github_user, github_repo, args.latest,
+                 args.ref, dependencies)
+    elif args.command == "list":
         list_ports()
     elif args.command == "remove":
         remove_port(args.port_name)
-    elif args.command == "add":
-        add_port(args.port_name, *args.github_path.split("/"),
-                 ref=args.ref, latest=args.latest, dependencies=args.dependencies)
     elif args.command == "update":
-        github_username, github_repo_name = args.github_path.split("/")
-        update_port(args.port_name, github_username,
-                    github_repo_name, ref=args.ref)
+        update_port(args.port_name)
+    else:
+        parser.print_help()
 
 
 if __name__ == "__main__":
