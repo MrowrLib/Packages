@@ -23,6 +23,10 @@
     "mrowr-memory-util-latest": {
       "baseline": "latest",
       "port-version": 0
+    },
+    "mrowr-assembly": {
+      "baseline": "2023-04-13-3a20a91",
+      "port-version": 0
     }
   }
 }
