@@ -137,7 +137,10 @@ def create_vcpkg_json_dict(port_name: str, port_description: str, github_user: s
             {"name": "vcpkg-cmake", "host": True},
             {"name": "vcpkg-cmake-config", "host": True},
         ]
+
     }
+    for dependency in dependencies:
+        vcpkg_json["dependencies"].append(dependency)
     return vcpkg_json
 
 
