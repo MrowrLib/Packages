@@ -15,6 +15,10 @@
     "mrowr-string-format-latest": {
       "baseline": "latest",
       "port-version": 0
+    },
+    "mrowr-memory-util": {
+      "baseline": "2023-04-15-dc967eb",
+      "port-version": 0
     }
   }
 }
