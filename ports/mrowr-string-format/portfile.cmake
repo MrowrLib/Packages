@@ -12,5 +12,5 @@ vcpkg_cmake_install()
 
 file(INSTALL ${SOURCE_PATH}/LICENSE DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright)
 
-vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/string_format)
+vcpkg_cmake_config_fixup(CONFIG_PATH share/string_format)
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug" "${CURRENT_PACKAGES_DIR}/lib")
