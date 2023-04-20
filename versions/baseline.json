@@ -24,10 +24,6 @@
       "baseline": "2023-04-13-3a20a91",
       "port-version": 0
     },
-    "mrowr-assembly-latest": {
-      "baseline": "latest",
-      "port-version": 0
-    },
     "mrowr-log-latest": {
       "baseline": "2023-04-17-80ec9cb",
       "port-version": 0
