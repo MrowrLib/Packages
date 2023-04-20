@@ -1,7 +1,7 @@
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://github.com/MrowrLib/_Log_.cpp.git
-    REF 5b27a9366a13bc47924b776f0d1ba7c289dc7fdb
+    REF 7683edd832978ee3eaaf8e4f4bdcd8f0ac9d9001
 )
 
 vcpkg_cmake_configure(
