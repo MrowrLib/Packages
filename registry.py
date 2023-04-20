@@ -1,8 +1,9 @@
 import argparse
-import subprocess
-import sys
+import datetime
 import json
 import re
+import subprocess
+import sys
 from pathlib import Path
 from urllib.request import urlopen
 
@@ -63,7 +64,7 @@ def git(args: list, working_dir: str = None) -> str:
     ).stdout
 
 
-def get_git_tree_sha(port_name):
+def get_git_tree_sha(port_name) -> str:
     return git(['rev-parse', f'HEAD:ports/{port_name}']).strip()
 
 
@@ -91,7 +92,7 @@ def get_github_latest_commit_info(github_user: str, github_repo: str, ref: str) 
         sys.exit(1)
 
 
-def create_portfile_contents_vcpkg_from_git(port_name: str, library_name: str, github_user: str, github_repo: str, ref: str) -> str:
+def create_portfile_contents_vcpkg_from_git(port_name: str, library_name: str, github_user: str, github_repo: str, ref: str, options_text: str) -> str:
     return f"""vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://github.com/{github_user}/{github_repo}.git
@@ -99,7 +100,7 @@ def create_portfile_contents_vcpkg_from_git(port_name: str, library_name: str, g
 )
 
 vcpkg_cmake_configure(
-    SOURCE_PATH ${{SOURCE_PATH}}
+    SOURCE_PATH ${{SOURCE_PATH}}{options_text}
 )
 
 vcpkg_cmake_install()
@@ -111,7 +112,7 @@ file(REMOVE_RECURSE "${{CURRENT_PACKAGES_DIR}}/debug" "${{CURRENT_PACKAGES_DIR}}
 """
 
 
-def create_portfile_contents_download_latest(port_name: str, library_name: str, github_user: str, github_repo: str, ref: str) -> str:
+def create_portfile_contents_download_latest(port_name: str, library_name: str, github_user: str, github_repo: str, ref: str, options_text: str) -> str:
     return f"""file(DOWNLOAD "https://api.github.com/repos/{github_user}/{github_repo}/tarball/{ref or 'main'}" ${{DOWNLOADS}}/{port_name}-latest.tar.gz
     SHOW_PROGRESS
 )
@@ -122,7 +123,7 @@ vcpkg_extract_source_archive(
 )
 
 vcpkg_cmake_configure(
-    SOURCE_PATH ${{SOURCE_PATH}}
+    SOURCE_PATH ${{SOURCE_PATH}}{options_text}
 )
 
 vcpkg_cmake_install()
@@ -134,11 +135,15 @@ file(REMOVE_RECURSE "${{CURRENT_PACKAGES_DIR}}/debug" "${{CURRENT_PACKAGES_DIR}}
 """
 
 
-def create_portfile_contents(port_name: str, library_name: str, github_user: str, github_repo: str, latest: bool, ref: str) -> str:
+def create_portfile_contents(port_name: str, library_name: str, github_user: str, github_repo: str, latest: bool, ref: str, options: list) -> str:
+    options_text = ""
+    if options:
+        options_text = "\n    OPTIONS "
+        options_text += " ".join([f"-D{option}" for option in options])
     if latest:
-        return create_portfile_contents_download_latest(port_name, library_name, github_user, github_repo, ref)
+        return create_portfile_contents_download_latest(port_name, library_name, github_user, github_repo, ref, options_text)
     else:
-        return create_portfile_contents_vcpkg_from_git(port_name, library_name, github_user, github_repo, ref)
+        return create_portfile_contents_vcpkg_from_git(port_name, library_name, github_user, github_repo, ref, options_text)
 
 
 def create_vcpkg_json_dict(port_name: str, port_description: str, github_user: str, github_repo: str, version_string: str, dependencies: list) -> dict:
@@ -157,7 +162,7 @@ def create_vcpkg_json_dict(port_name: str, port_description: str, github_user: s
     return vcpkg_json
 
 
-def add_port(port_name: str, library_name: str, github_user: str, github_repo: str, latest: bool, ref: str, dependencies: list) -> None:
+def add_port(port_name: str, library_name: str, github_user: str, github_repo: str, latest: bool, ref: str, dependencies: list, options: list) -> None:
     if port_exists(port_name):
         print(f"Port {port_name} already exists.")
         sys.exit(1)
@@ -199,7 +204,7 @@ def add_port(port_name: str, library_name: str, github_user: str, github_repo: s
 
     # Create the portfile.cmake
     portfile_contents = create_portfile_contents(
-        port_name, library_name, github_user, github_repo, latest, ref)
+        port_name, library_name, github_user, github_repo, latest, ref, options)
     portfile_path = get_portfile_path(port_name)
     print(f"Writing {portfile_path}")
     with open(portfile_path, "w") as f:
@@ -394,6 +399,50 @@ def update_port(port_name: str) -> None:
     print(f"Succesfully updated port '{port_name}'")
 
 
+def update_versions_file(port_name: str) -> None:
+    # Get the current version-string from the vcpkg.json
+    vcpgk_json_path = get_vcpkg_json_path(port_name)
+    with open(vcpgk_json_path, "r") as f:
+        vcpkg_json_data = json.load(f)
+    version_string = vcpkg_json_data["version-string"]
+
+    # Produce a commit message with the current date and time
+    commit_message = f"Update {port_name} {version_string} ({datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')})"
+
+    # Add the port to git and commit (note: there may be no changes to stage and that's ok)
+    # (we just need the git tree SHA to update if there are changed to stage and commit)
+    git(["add", f"ports/{port_name}"])
+    git(["commit", "-m", commit_message])
+
+    # Get the git tree SHA
+    git_tree_sha = get_git_tree_sha(port_name)
+
+    # Get the git-tree from the versions .json file for the current version-string
+    version_file_path = get_version_file_path(port_name)
+    with open(version_file_path, "r") as f:
+        version_json_data = json.load(f)
+    git_tree = next(
+        (v["git-tree"] for v in version_json_data["versions"] if v["version-string"] == version_string), None)
+
+    if git_tree == git_tree_sha:
+        print(f"Port {port_name} is already up to date.")
+        sys.exit(0)
+
+    # Update the version in the versions .json file with a matching version-string to use the updated git tree SHA
+    for v in version_json_data["versions"]:
+        if v["version-string"] == version_string:
+            v["git-tree"] = git_tree_sha
+    print(f"Updating {version_file_path}")
+    with open(version_file_path, "w") as f:
+        json.dump(version_json_data, f, indent=2)
+
+    # Add the updated versions .json file to git and commit
+    git(["add", version_file_path])
+    git(["commit", "--amend", "--no-edit"])
+
+    print(f"Succesfully updated port '{port_name}'")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Manage a vcpkg registry.")
     parser.add_argument("--dry-run", action="store_true",
@@ -414,6 +463,8 @@ def main() -> None:
                             default="", help="Comma-separated list of dependencies.")
     add_parser.add_argument(
         "--library", "--lib", help="CMake library name (defaults to provided port name)")
+    add_parser.add_argument(
+        '--options', help='Comma-separated list of CMake options in the format "Option=Value"', default='')
 
     subparsers.add_parser(
         "list", help="List all ports in the registry.")
@@ -430,6 +481,11 @@ def main() -> None:
     update_parser.add_argument(
         "--ref", help="The specific git commit to update the port to use.")
 
+    update_versions_parser = subparsers.add_parser(
+        "update-versions", help="Update the versions file for a port (e.g. you can change the portfile.cmake and then run this command to update the port).")
+    update_versions_parser.add_argument(
+        "port_name", help="The name of the port to update the versions file for.")
+
     args = parser.parse_args()
     if args.dry_run:
         global DRY_RUN
@@ -440,15 +496,20 @@ def main() -> None:
         dependencies = []
         if args.dependencies:
             dependencies = args.dependencies.split(",")
+        options = []
+        if args.options:
+            options = args.options.split(",")
         github_user, github_repo = args.github_repo.split("/")
         add_port(args.port_name, args.library, github_user, github_repo, args.latest,
-                 args.ref, dependencies)
+                 args.ref, dependencies, options)
     elif args.command == "list":
         list_ports()
     elif args.command == "remove":
         remove_port(args.port_name)
     elif args.command == "update":
         update_port(args.port_name)
+    elif args.command == "update-versions":
+        update_versions_file(args.port_name)
     else:
         parser.print_help()
 
