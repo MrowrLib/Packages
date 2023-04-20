@@ -6,6 +6,7 @@ vcpkg_from_git(
 
 vcpkg_cmake_configure(
     SOURCE_PATH ${SOURCE_PATH}
+    OPTIONS -DBUILD_EXAMPLE=OFF
 )
 
 vcpkg_cmake_install()
