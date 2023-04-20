@@ -1,6 +1,6 @@
 {
   "name": "mrowr-log",
-  "version-string": "2023-04-20-7683edd",
+  "version-string": "2023-04-20-be5365a",
   "description": "_Log_(\"Easiest Logging Ever\")",
   "dependencies": [
     {
