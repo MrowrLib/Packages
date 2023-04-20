@@ -6,6 +6,8 @@ import re
 from pathlib import Path
 from urllib.request import urlopen
 
+DRY_RUN = False
+
 
 def port_exists(port_name: str) -> bool:
     return (Path("ports") / port_name).exists()
@@ -49,6 +51,9 @@ def git(args: list, working_dir: str = None) -> str:
     args = [str(arg) for arg in args]
     text_args = [f'"{arg}"' if " " in arg else arg for arg in args]
     print(f"git {' '.join(text_args)}")
+    if DRY_RUN and args[0] == "commit":
+        print("git commit skipped [--dry-run]")
+        return ""
     return subprocess.run(
         ["git"] + args,
         stdout=subprocess.PIPE,
@@ -65,8 +70,12 @@ def get_git_tree_sha(port_name):
 def get_github_repo_info(username: str, repo_name: str) -> dict:
     api_url = f"https://api.github.com/repos/{username}/{repo_name}"
     print(f"GET {api_url}")
-    response = urlopen(api_url)
-    return json.loads(response.read().decode("utf-8"))
+    try:
+        response = urlopen(api_url)
+        return json.loads(response.read().decode("utf-8"))
+    except Exception as e:
+        print(f"Failed to get repo info from {api_url}: {e}")
+        sys.exit(1)
 
 
 def get_github_latest_commit_info(github_user: str, github_repo: str, ref: str) -> dict:
@@ -74,8 +83,12 @@ def get_github_latest_commit_info(github_user: str, github_repo: str, ref: str) 
     api_url = repo_url.replace(
         'github.com', 'api.github.com/repos') + f"/commits/{ref or 'main'}"
     print(f"GET {api_url}")
-    response = urlopen(api_url)
-    return json.loads(response.read().decode('utf-8'))
+    try:
+        response = urlopen(api_url)
+        return json.loads(response.read().decode('utf-8'))
+    except Exception as e:
+        print(f"Failed to get commit info from {api_url}: {e}")
+        sys.exit(1)
 
 
 def create_portfile_contents_vcpkg_from_git(port_name: str, library_name: str, github_user: str, github_repo: str, ref: str) -> str:
@@ -383,6 +396,9 @@ def update_port(port_name: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Manage a vcpkg registry.")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Don't perform any git commits.")
+
     subparsers = parser.add_subparsers(dest="command")
 
     add_parser = subparsers.add_parser(
@@ -415,6 +431,10 @@ def main() -> None:
         "--ref", help="The specific git commit to update the port to use.")
 
     args = parser.parse_args()
+    if args.dry_run:
+        global DRY_RUN
+        DRY_RUN = True
+        print("Dry run mode enabled. No git commits will be performed.")
 
     if args.command == "add":
         dependencies = []
