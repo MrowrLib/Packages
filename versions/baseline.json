@@ -12,10 +12,6 @@
       "baseline": "2023-04-20-9eb9d57",
       "port-version": 0
     },
-    "mrowr-memory-util-latest": {
-      "baseline": "latest",
-      "port-version": 0
-    },
     "mrowr-assembly": {
       "baseline": "2023-04-13-3a20a91",
       "port-version": 0
