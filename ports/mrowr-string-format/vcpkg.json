@@ -1,6 +1,6 @@
 {
   "name": "mrowr-string-format",
-  "version-string": "2023-04-21-8083d9c",
+  "version-string": "2023-04-21-ec427b9",
   "description": "string_format(\"Super {}\", \"Easy\")",
   "dependencies": [
     {
