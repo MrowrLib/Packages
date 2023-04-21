@@ -4,6 +4,10 @@ vcpkg_from_git(
     REF 45e8db50ba8a68b6fda60a31b41c37411aa156ad
 )
 
+message("What is PORT? ${PORT}")
+message("What is SOURCE PATH? ${SOURCE_PATH}")
+message("What is CURRENT_PACKAGES_DIR? ${CURRENT_PACKAGES_DIR}")
+
 configure_file("${SOURCE_PATH}/LICENSE" "${CURRENT_PACKAGES_DIR}/share/${PORT}/copyright" COPYONLY)
 
 vcpkg_cmake_configure(SOURCE_PATH ${SOURCE_PATH})
