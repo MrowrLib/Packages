@@ -4,19 +4,48 @@ vcpkg_from_git(
     REF 16841a3d6c005959af7de7366c7469200280d608
 )
 
-set(LIBRARY_NAME _Log_)
+# set(LIBRARY_NAME _Log_)
+message(STATUS "PORT: ${PORT}")
+message(STATUS "SOURCE_PATH: ${SOURCE_PATH}")
+message(STATUS "CURRENT_PACKAGES_DIR: ${CURRENT_PACKAGES_DIR}")
+
+# Print out whether CURRENT_PACKAGES_DIRECTORY/share/${PORT} exists
+if(EXISTS "${CURRENT_PACKAGES_DIR}/share/${PORT}")
+    message(STATUS "CURRENT_PACKAGES_DIR/share/${PORT} exists")
+else()
+    message(STATUS "CURRENT_PACKAGES_DIR/share/${PORT} does not exist")
+endif()
+
+message("Configuring...")
 
 vcpkg_cmake_configure(
     SOURCE_PATH ${SOURCE_PATH}
     OPTIONS -DBUILD_EXAMPLE=OFF
 )
 
+message("Installing...")
+
 vcpkg_cmake_install()
 
-file(COPY ${CURRENT_PACKAGES_DIR}/share/${PORT}/ DESTINATION ${CURRENT_PACKAGES_DIR}/share/${LIBRARY_NAME})
+message("Installed.")
 
+message(STATUS "PORT: ${PORT}")
+message(STATUS "SOURCE_PATH: ${SOURCE_PATH}")
+message(STATUS "CURRENT_PACKAGES_DIR: ${CURRENT_PACKAGES_DIR}")
+
+# Print out whether CURRENT_PACKAGES_DIRECTORY/share/${PORT} exists
+if(EXISTS "${CURRENT_PACKAGES_DIR}/share/${PORT}")
+    message(STATUS "CURRENT_PACKAGES_DIR/share/${PORT} exists")
+else()
+    message(STATUS "CURRENT_PACKAGES_DIR/share/${PORT} does not exist")
+endif()
+
+file(COPY "${CURRENT_PACKAGES_DIR}/share/${PORT}/" DESTINATION "${CURRENT_PACKAGES_DIR}/share/_Log_")
+
+# file(COPY "${CURRENT_PACKAGES_DIR}/share/${PORT}/" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${LIBRARY_NAME}")
+
+# "${CURRENT_PACKAGES_DIR}/share/${PORT}/*/**"
 file(REMOVE_RECURSE
-    "${CURRENT_PACKAGES_DIR}/share/${PORT}/*/**"
     "${CURRENT_PACKAGES_DIR}/debug"
     "${CURRENT_PACKAGES_DIR}/lib"
 )
