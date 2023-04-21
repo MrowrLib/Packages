@@ -4,13 +4,13 @@ vcpkg_from_git(
     REF 45e8db50ba8a68b6fda60a31b41c37411aa156ad
 )
 
-set(PACKAGE_NAME string_format)
+set(LIBRARY_NAME string_format)
 
 vcpkg_cmake_configure(SOURCE_PATH ${SOURCE_PATH})
 
 vcpkg_cmake_install()
 
-file(INSTALL "${CURRENT_PACKAGES_DIR}/share/${PORT}/" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PACKAGE_NAME}")
+file(INSTALL "${CURRENT_PACKAGES_DIR}/share/${PORT}/" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${LIBRARY_NAME}")
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/share/${PORT}/*/**"
