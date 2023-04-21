@@ -38,6 +38,13 @@ else()
     message(STATUS "${CURRENT_PACKAGES_DIR}/share/${PORT} does not exist")
 endif()
 
+file(GLOB_RECURSE FOLDER_CONTENTS "${CURRENT_PACKAGES_DIR}/share/${PORT}/*")
+message(STATUS "Folder contents: ${FOLDER_CONTENTS}")
+
+message("LOOK NOW!")
+execute_process(COMMAND "${CMAKE_COMMAND}" -E sleep 10)
+message("Done waiting")
+
 # file(COPY "${CURRENT_PACKAGES_DIR}/share/${PORT}/" DESTINATION "${CURRENT_PACKAGES_DIR}/share/_Log_")
 
 # file(COPY "${CURRENT_PACKAGES_DIR}/share/${PORT}/" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${LIBRARY_NAME}")
