@@ -1,7 +1,7 @@
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://github.com/MrowrLib/memory_util.git
-    REF ae13023d0eb98f4d87d875c3bc531b89ca13e310
+    REF 89d8d46bebbae1cd21ac9156fed1b34ffb8257a6
 )
 
 vcpkg_cmake_configure(
