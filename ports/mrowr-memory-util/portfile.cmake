@@ -1,6 +1,6 @@
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
-    URL https://github.com/MrowrLib/memory_util.git
+    URL https://github.com/MrowrLib/memory_util.cpp.git
     REF 89d8d46bebbae1cd21ac9156fed1b34ffb8257a6
 )
 
