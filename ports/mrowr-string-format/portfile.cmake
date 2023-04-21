@@ -4,13 +4,11 @@ vcpkg_from_git(
     REF 45e8db50ba8a68b6fda60a31b41c37411aa156ad
 )
 
-vcpkg_cmake_configure(
-    SOURCE_PATH ${SOURCE_PATH}
-)
+configure_file("${SOURCE_PATH}/LICENSE" "${CURRENT_PACKAGES_DIR}/share/${PORT}/copyright" COPYONLY)
+
+vcpkg_cmake_configure(SOURCE_PATH ${SOURCE_PATH})
 
 vcpkg_cmake_install()
-
-configure_file("${SOURCE_PATH}/LICENSE" "${CURRENT_PACKAGES_DIR}/share/${PORT}/copyright" COPYONLY)
 
 file(COPY ${CURRENT_PACKAGES_DIR}/share/${PORT}/ DESTINATION ${CURRENT_PACKAGES_DIR}/share/string_format)
 
