@@ -24,9 +24,21 @@ vcpkg_cmake_configure(
 
 message("Installing...")
 
+file(GLOB children "${CURRENT_PACKAGES_DIR}/*")
+
+foreach(child ${children})
+    message(STATUS "Child: ${child}")
+endforeach()
+
 vcpkg_cmake_install()
 
 message("Installed.")
+
+file(GLOB children "${CURRENT_PACKAGES_DIR}/*")
+
+foreach(child ${children})
+    message(STATUS "Child: ${child}")
+endforeach()
 
 message(STATUS "PORT: ${PORT}")
 message(STATUS "SOURCE_PATH: ${SOURCE_PATH}")
