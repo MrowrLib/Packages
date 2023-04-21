@@ -12,8 +12,6 @@ vcpkg_cmake_configure(
 vcpkg_cmake_install()
 
 file(INSTALL ${SOURCE_PATH}/LICENSE DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright)
-file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/share/${PORT}")
-
 file(COPY ${CURRENT_PACKAGES_DIR}/share/${PORT}/ DESTINATION ${CURRENT_PACKAGES_DIR}/share/_Log_)
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/share/${PORT}")
 
