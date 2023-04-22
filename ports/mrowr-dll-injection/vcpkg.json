@@ -1,6 +1,6 @@
 {
   "name": "mrowr-dll-injection",
-  "version-string": "2023-04-22-0b37ae7",
+  "version-string": "2023-04-22-9252b08",
   "description": "InjectDLL(\"app.exe\", \"lib.dll\")",
   "dependencies": [
     {
