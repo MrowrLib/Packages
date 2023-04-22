@@ -321,7 +321,8 @@ def update_port(port_name: str) -> None:
         sys.exit(1)
 
     # Get the github user and repo from the portfile
-    url_pattern = re.compile(r'URL\s+(https://github.com/[\w\-]+/[\w\-]+)')
+    url_pattern = re.compile(
+        r'URL\s+(https://github.com/[\w\-]+/[\w\-\.]+)\.git')
     repo_url = url_pattern.search(portfile_contents).group(1)
     github_user, github_repo = repo_url.split("/")[-2:]
 
