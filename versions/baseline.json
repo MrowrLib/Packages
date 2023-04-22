@@ -15,6 +15,10 @@
     "mrowr-assembly": {
       "baseline": "2023-04-21-4c6c5e3",
       "port-version": 0
+    },
+    "mrowr-dll-injection": {
+      "baseline": "2023-04-22-64b5f16",
+      "port-version": 0
     }
   }
 }

@@ -1,0 +1,16 @@
+{
+  "name": "mrowr-dll-injection",
+  "version-string": "2023-04-22-64b5f16",
+  "description": "InjectDLL(\"app.exe\", \"lib.dll\")",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    },
+    "mrowr-log"
+  ]
+}
