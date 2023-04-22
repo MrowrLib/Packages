@@ -1,7 +1,7 @@
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://github.com/MrowrLib/dll_injection.cpp.git
-    REF 28db654067df9dec3ce7816b8e1963473b007fce
+    REF 0b37ae79c93946ca4d4eb14b1d4894b0f7f10ef0
 )
 
 vcpkg_cmake_configure(
