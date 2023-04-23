@@ -1,6 +1,6 @@
 {
   "name": "mrowr-memory-util",
-  "version-string": "2023-04-21-89d8d46",
+  "version-string": "2023-04-23-2f6d74f",
   "description": "MemoryUtil::Read<Easy>(0x69420)",
   "dependencies": [
     {
