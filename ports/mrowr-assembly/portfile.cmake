@@ -1,7 +1,7 @@
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://github.com/MrowrLib/assembly.cpp.git
-    REF 4c6c5e34f9ccf7db0944e27ee1e8f02a8aaebfdd
+    REF 514f4cbbfd6bba4c61a8146dc1c7ce04d9d47865
 )
 
 vcpkg_cmake_configure(
