@@ -1,7 +1,7 @@
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://github.com/MrowrLib/string_format.cpp.git
-    REF dabea8bff778d33554aa8d83cb9382d4c093b068
+    REF 9e07604bd677e4784abbd6b38128bbf216ad2ca5
 )
 
 vcpkg_cmake_configure(
