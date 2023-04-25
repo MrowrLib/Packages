@@ -1,6 +1,6 @@
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
-    URL https://github.com/MrowrLib/_Log_.cpp.git
+    URL https://github.com/MrowrLib/_Log_.h.git
     REF d9551e9ed0df14f19beebdbc34f57a9d28ae0f16
 )
 
