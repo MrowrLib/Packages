@@ -1,6 +1,6 @@
 {
   "name": "mrowr-assembly",
-  "version-string": "2023-04-23-514f4cb",
+  "version-string": "2023-04-26-ecffa05",
   "description": "asm <--> bytes <--> asm",
   "dependencies": [
     {
