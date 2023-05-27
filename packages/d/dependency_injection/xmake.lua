@@ -1,0 +1,7 @@
+package("dependency_injection")
+    set_homepage("https://github.com/MrowrLib/dependency_injection.h")
+    set_description("A header-only library for dependency injection / inversion of control.")
+    add_urls("https://github.com/MrowrLib/dependency_injection.h.git")
+    on_install(function (package)
+        os.cp("include", package:installdir())
+    end)
