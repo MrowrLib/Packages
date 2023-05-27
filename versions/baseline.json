@@ -19,6 +19,10 @@
     "mrowr-dll-injection": {
       "baseline": "2023-04-23-926b6fb",
       "port-version": 0
+    },
+    "mrowr-dependency-injection": {
+      "baseline": "2023-05-27-2d78fba",
+      "port-version": 0
     }
   }
 }

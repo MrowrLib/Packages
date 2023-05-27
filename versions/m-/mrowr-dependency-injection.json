@@ -1,0 +1,8 @@
+{
+  "versions": [
+    {
+      "version-string": "2023-05-27-2d78fba",
+      "git-tree": "HEAD:ports/mrowr-dependency-injection"
+    }
+  ]
+}

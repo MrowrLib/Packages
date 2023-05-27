@@ -1,0 +1,15 @@
+{
+  "name": "mrowr-dependency-injection",
+  "version-string": "2023-05-27-2d78fba",
+  "description": "Simple Dependency Injection / Inversion of Control",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}
