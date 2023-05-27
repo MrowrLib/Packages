@@ -1,7 +1,7 @@
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://github.com/MrowrLib/dependency_injection.h.git
-    REF 2d78fba2da22e0c77e096b2e962c145b575312e7
+    REF 920cf4218838eb3032be37e7731e28b77e863996
 )
 
 vcpkg_cmake_configure(

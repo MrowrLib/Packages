@@ -3,6 +3,10 @@
     {
       "version-string": "2023-05-27-2d78fba",
       "git-tree": "HEAD:ports/mrowr-dependency-injection"
+    },
+    {
+      "version-string": "2023-05-27-920cf42",
+      "git-tree": "1ebff348fde68a34b06bba512e8f40a2f7de8d39"
     }
   ]
 }

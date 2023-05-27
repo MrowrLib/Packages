@@ -1,6 +1,6 @@
 {
   "name": "mrowr-dependency-injection",
-  "version-string": "2023-05-27-2d78fba",
+  "version-string": "2023-05-27-920cf42",
   "description": "Simple Dependency Injection / Inversion of Control",
   "dependencies": [
     {
