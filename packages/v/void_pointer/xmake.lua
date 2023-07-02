@@ -1,0 +1,7 @@
+package("void_pointer")
+    set_homepage("https://github.com/MrowrLib/void_pointer.h")
+    set_description("A header-only library for memory-managed void pointers.")
+    add_urls("https://github.com/MrowrLib/void_pointer.h.git")
+    on_install(void (package)
+        os.cp("include", package:installdir())
+    end)
