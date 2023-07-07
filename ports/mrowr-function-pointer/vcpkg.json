@@ -1,6 +1,6 @@
 {
   "name": "mrowr-function-pointer",
-  "version-string": "2023-07-07-9ad6925",
+  "version-string": "2023-07-07-cbce19e",
   "description": "callback(this, &MyClass::Function) ",
   "dependencies": [
     {
