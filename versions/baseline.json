@@ -27,6 +27,10 @@
     "mrowr-void-pointer": {
       "baseline": "2023-07-08-66091c2",
       "port-version": 0
+    },
+    "mrowr-function-pointer": {
+      "baseline": "2023-07-07-33f3fc6",
+      "port-version": 0
     }
   }
 }
