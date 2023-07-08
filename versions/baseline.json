@@ -23,6 +23,10 @@
     "mrowr-dependency-injection": {
       "baseline": "2023-05-27-920cf42",
       "port-version": 0
+    },
+    "mrowr-void-pointer": {
+      "baseline": "2023-07-08-66091c2",
+      "port-version": 0
     }
   }
 }
