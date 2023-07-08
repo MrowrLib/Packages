@@ -1,7 +1,7 @@
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://github.com/MrowrLib/void_pointer.h.git
-    REF 95ce2e02c494214af0c4bae64ad951474f0affee
+    REF abbd6b2af7c79c63d08091e0d4caabea955feea9
 )
 
 vcpkg_cmake_configure(
