@@ -1,7 +1,7 @@
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://github.com/MrowrLib/function_pointer.h.git
-    REF 1ecf91f6b153c3cb4e371187f5891f11f09c3165
+    REF f3d56611cdd88e1f63b5bbdf1ed27bfd279f494e
 )
 
 vcpkg_cmake_configure(
