@@ -1,0 +1,7 @@
+package("global_macro_functions")
+    set_homepage("https://github.com/MrowrLib/global_macro_functions.h")
+    set_description("A header-only macro library for creating DSLs with global code blocks.")
+    add_urls("https://github.com/MrowrLib/global_macro_functions.h.git")
+    on_install(function (package)
+        os.cp("include", package:installdir())
+    end)
