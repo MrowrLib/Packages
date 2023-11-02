@@ -1,0 +1,7 @@
+package("collections")
+    set_homepage("https://github.com/MrowrLib/collections.h")
+    set_description("Easily swap out C++ collection classes.")
+    add_urls("https://github.com/MrowrLib/collections.h.git")
+    on_install(function (package)
+        os.cp("include", package:installdir())
+    end)
