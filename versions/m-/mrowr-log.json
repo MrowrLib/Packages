@@ -71,6 +71,10 @@
     {
       "version-string": "2023-11-27-46e8e2b",
       "git-tree": "7cdccb93d21da70a7bc67f64034601083435e33e"
+    },
+    {
+      "version-string": "2023-11-27-2b79500",
+      "git-tree": "2de8d7ec241a2e3a253069335074e182889019c6"
     }
   ]
 }
