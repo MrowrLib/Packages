@@ -19,6 +19,10 @@
     {
       "version-string": "2023-07-08-a52fc63",
       "git-tree": "ee10a4285dff270b5962ba82bdeed70b8bdb4c5c"
+    },
+    {
+      "version-string": "2023-12-07-020683b",
+      "git-tree": "55a183248d267dcf448cbc666f0f2200bb50e09e"
     }
   ]
 }
