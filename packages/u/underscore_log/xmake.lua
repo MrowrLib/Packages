@@ -1,4 +1,4 @@
-package("mrowr_log")
+package("underscore_log")
     set_homepage("https://github.com/MrowrLib/_Log_.h")
     set_description("A header-only library for simple logging.")
     add_urls("https://github.com/MrowrLib/_Log_.h.git")
