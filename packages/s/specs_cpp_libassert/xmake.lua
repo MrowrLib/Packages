@@ -11,4 +11,6 @@ package("specs_cpp_libassert")
 
         -- libassert integration for Specs.cpp
         os.cp("Specs.LibAssert/include/*", include_dir)
+
+        package:add("defines", "ASSERT_FAIL=libassert_specs_handler")
     end)
