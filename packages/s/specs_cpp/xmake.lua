@@ -11,26 +11,32 @@ package("specs_cpp")
         "cxxopts"
     )
     on_install(function (package)
+        local include_dir = os.path.join(package:includedir(), "include")
+
+        if not os.isdir(include_dir) then
+            os.mkdir(include_dir)
+        end
+
         -- The C++ interfaces
-        os.cp("Specs.API/include/*", package:installdir())
+        os.cp("Specs.API/include/*", include_dir)
 
         -- Support for shared DLLs
-        os.cp("Specs.DLL/include/*", package:installdir())
-        os.cp("Specs.DllLoader/include/*", package:installdir())
+        os.cp("Specs.DLL/include/*", include_dir)
+        os.cp("Specs.DllLoader/include/*", include_dir)
 
         -- Core implementation classes for main interfaces
-        os.cp("Specs.Implementations/include/*", package:installdir())
+        os.cp("Specs.Implementations/include/*", include_dir)
 
         -- Available Runners and Reporters
-        os.cp("Specs.Runners/include/*", package:installdir())
-        os.cp("Specs.Reporters/include/*", package:installdir())
+        os.cp("Specs.Runners/include/*", include_dir)
+        os.cp("Specs.Reporters/include/*", include_dir)
 
         -- main() entrypoint
-        os.cp("Specs.Main/include/*", package:installdir())
+        os.cp("Specs.Main/include/*", include_dir)
 
         -- DSLs for defining specs
-        os.cp("Specs.DSLs/include/*", package:installdir())
+        os.cp("Specs.DSLs/include/*", include_dir)
 
         -- Provides <Specs.h> helper header
-        os.cp("Specs/include/*", package:installdir())
+        os.cp("Specs/include/*", include_dir)
     end)
