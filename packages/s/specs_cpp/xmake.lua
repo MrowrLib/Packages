@@ -11,7 +11,7 @@ package("specs_cpp")
         "cxxopts"
     )
     on_install(function (package)
-        local include_dir = os.path.join(package:includedir(), "include")
+        local include_dir = path.join(package:includedir(), "include")
 
         if not os.isdir(include_dir) then
             os.mkdir(include_dir)
