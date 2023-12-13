@@ -16,7 +16,6 @@ vcpkg_cmake_install()
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug"
-    "${CURRENT_PACKAGES_DIR}/lib"
 )
 
 file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/share/${PORT}")
