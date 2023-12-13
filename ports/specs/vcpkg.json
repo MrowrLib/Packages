@@ -13,7 +13,7 @@
     },
     "mrowr-function-pointer",
     "mrowr-global-macro-functions",
-    "mrowr-collctions",
+    "mrowr-collections",
     "mrowr-log",
     "mrowr-string-format",
     "cxxopts"
