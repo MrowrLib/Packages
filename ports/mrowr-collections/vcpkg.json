@@ -1,6 +1,6 @@
 {
   "name": "mrowr-collections",
-  "version-string": "2023-11-02-6a23501",
+  "version-string": "2023-12-13-c455cf7",
   "description": "Easily swap out C++ collection classes",
   "dependencies": [
     {
