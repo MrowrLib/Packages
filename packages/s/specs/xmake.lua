@@ -1,4 +1,4 @@
-package("specs_cpp")
+package("specs")
     set_homepage("https://github.com/mrowrpurr/Specs.cpp")
     set_description("Async BDD C++ Test Framework.")
     add_urls("https://github.com/mrowrpurr/Specs.cpp.git")

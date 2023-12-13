@@ -1,4 +1,4 @@
-package("specs_cpp_snowhouse")
+package("specs_snowhouse")
     set_homepage("https://github.com/mrowrpurr/Specs.cpp")
     set_description("Snowhouse assertion support for Specs.cpp")
     add_urls("https://github.com/mrowrpurr/Specs.cpp.git")

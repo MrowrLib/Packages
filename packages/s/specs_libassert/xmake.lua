@@ -1,4 +1,4 @@
-package("specs_cpp_libassert")
+package("specs_libassert")
     set_homepage("https://github.com/mrowrpurr/Specs.cpp")
     set_description("libassert assertion support for Specs.cpp")
     add_urls("https://github.com/mrowrpurr/Specs.cpp.git")
