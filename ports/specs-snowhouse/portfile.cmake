@@ -6,6 +6,10 @@ vcpkg_from_git(
 
 vcpkg_cmake_configure(
     SOURCE_PATH ${SOURCE_PATH}
+    OPTIONS
+        -DBUILD_SPECS=OFF
+        -DBUILD_SNOWHOUSE_ADAPTER=ON
+        -DBUILD_LIBASSERT_ADAPTER=OFF
 )
 
 vcpkg_cmake_install()
