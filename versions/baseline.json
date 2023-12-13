@@ -39,6 +39,10 @@
     "mrowr-global-macro-functions": {
       "baseline": "2023-12-10-faaa2d0",
       "port-version": 0
+    },
+    "specs": {
+      "baseline": "2023-12-13-bc89329",
+      "port-version": 0
     }
   }
 }

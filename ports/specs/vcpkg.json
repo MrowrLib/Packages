@@ -1,0 +1,21 @@
+{
+  "name": "specs",
+  "version-string": "2023-12-13-bc89329",
+  "description": "Beautiful C++ Test Framework \ud83d\udc53",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    },
+    "mrowr-function-pointer",
+    "mrowr-global-macro-functions",
+    "mrowr-collctions",
+    "mrowr-log",
+    "mrowr-string-format",
+    "cxxopts"
+  ]
+}
