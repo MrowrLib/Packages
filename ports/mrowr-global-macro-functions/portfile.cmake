@@ -1,7 +1,7 @@
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://github.com/MrowrLib/global_macro_functions.h.git
-    REF faaa2d066e41038abd805baec80b2d774096aced
+    REF 13011190dae79a1005abd41c7dda13805ce1e3db
 )
 
 vcpkg_cmake_configure(

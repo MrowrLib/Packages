@@ -1,6 +1,6 @@
 {
   "name": "mrowr-global-macro-functions",
-  "version-string": "2023-12-10-faaa2d0",
+  "version-string": "2023-12-13-1301119",
   "description": "CppGlobalCodeBlocks { ... }",
   "dependencies": [
     {
