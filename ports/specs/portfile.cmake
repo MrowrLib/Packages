@@ -14,9 +14,14 @@ vcpkg_cmake_configure(
 
 vcpkg_cmake_install()
 
+# Move debug/lib contents to lib/ if it exists
+if(EXISTS "${CURRENT_PACKAGES_DIR}/debug/lib")
+    file(GLOB DEBUG_LIB_FILES "${CURRENT_PACKAGES_DIR}/debug/lib/*")
+    file(COPY ${DEBUG_LIB_FILES} DESTINATION "${CURRENT_PACKAGES_DIR}/lib")
+endif()
+
 file(REMOVE_RECURSE
-    "${CURRENT_PACKAGES_DIR}/debug/include"
-    "${CURRENT_PACKAGES_DIR}/debug/share"
+    "${CURRENT_PACKAGES_DIR}/debug"
 )
 
 file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/share/${PORT}")
