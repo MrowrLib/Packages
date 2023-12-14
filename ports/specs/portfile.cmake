@@ -1,7 +1,7 @@
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://github.com/mrowrpurr/Specs.cpp.git
-    REF f61032898e80b4981ffd72f24e9ea2a80f189284
+    REF 4b06fe83c260cd0d7e2998cc740fd57c67f1227d
 )
 
 vcpkg_cmake_configure(
