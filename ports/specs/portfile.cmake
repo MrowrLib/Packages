@@ -14,7 +14,7 @@ vcpkg_cmake_configure(
 
 vcpkg_cmake_install()
 
-if(VCPKG_BUILD_TYPE STREQUAL "DEBUG")
+if(VCPKG_BUILD_TYPE STREQUAL "debug")
     # Delete all the release lib files
     file(GLOB LIBS "${CURRENT_PACKAGES_DIR}/lib/*.lib")
 
