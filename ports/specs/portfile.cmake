@@ -1,7 +1,7 @@
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://github.com/mrowrpurr/Specs.cpp.git
-    REF c63a16ab02e37768650ca441834bcfc11c30ed8d
+    REF f61032898e80b4981ffd72f24e9ea2a80f189284
 )
 
 vcpkg_cmake_configure(
@@ -14,19 +14,8 @@ vcpkg_cmake_configure(
 
 vcpkg_cmake_install()
 
-if(VCPKG_BUILD_TYPE STREQUAL "debug")
-    # Delete all the release lib files
-    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/lib/*.lib")
-
-    # Copy everything from debug/lib into lib
-    file(GLOB DEBUG_LIBS "${CURRENT_PACKAGES_DIR}/debug/lib/*.lib")
-    file(COPY ${DEBUG_LIBS} DESTINATION "${CURRENT_PACKAGES_DIR}/lib")
-endif()
-
-
 file(REMOVE_RECURSE
-    "${CURRENT_PACKAGES_DIR}/debug/include"
-    "${CURRENT_PACKAGES_DIR}/debug/share"
+    "${CURRENT_PACKAGES_DIR}/debug"
 )
 
 file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/share/${PORT}")
