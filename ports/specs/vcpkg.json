@@ -1,6 +1,6 @@
 {
   "name": "specs",
-  "version-string": "2023-12-14-298bab9",
+  "version-string": "2023-12-14-515e850",
   "description": "Beautiful C++ Test Framework \ud83d\udc53",
   "dependencies": [
     {
