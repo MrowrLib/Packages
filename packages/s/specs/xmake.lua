@@ -35,6 +35,7 @@ package("specs")
         os.cp("Specs.Main/include/*", include_dir)
 
         -- DSLs for defining specs
+        os.cp("Specs.Globals/include/*", include_dir)
         os.cp("Specs.DSLs/include/*", include_dir)
 
         -- Provides <Specs.h> helper header
