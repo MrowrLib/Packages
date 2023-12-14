@@ -16,12 +16,13 @@ vcpkg_cmake_install()
 
 if(VCPKG_BUILD_TYPE STREQUAL "debug")
     # Delete all the release lib files
-    file(GLOB LIBS "${CURRENT_PACKAGES_DIR}/lib/*.lib")
+    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/lib/*.lib")
 
     # Copy everything from debug/lib into lib
-    file(GLOB LIBS "${CURRENT_PACKAGES_DIR}/debug/lib/*.lib")
-    file(COPY ${LIBS} DESTINATION "${CURRENT_PACKAGES_DIR}/lib")
+    file(GLOB DEBUG_LIBS "${CURRENT_PACKAGES_DIR}/debug/lib/*.lib")
+    file(COPY ${DEBUG_LIBS} DESTINATION "${CURRENT_PACKAGES_DIR}/lib")
 endif()
+
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"
