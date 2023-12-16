@@ -22,7 +22,7 @@ package("specs")
 
         -- Support for shared DLLs
         os.cp("Specs.DLL/include/*", include_dir)
-        os.cp("Specs.DllLoader/include/*", include_dir)
+        os.cp("Specs.LibraryLoader/include/*", include_dir)
 
         -- Core implementation classes for main interfaces
         os.cp("Specs.Implementations/include/*", include_dir)
