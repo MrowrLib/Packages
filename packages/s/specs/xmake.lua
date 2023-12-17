@@ -8,6 +8,7 @@ package("specs")
         "collections",
         "underscore_log",
         "string_format",
+        "void_pointer",
         "cxxopts"
     )
     on_install(function (package)
