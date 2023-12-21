@@ -1,6 +1,6 @@
 {
   "name": "specs-snowhouse",
-  "version-string": "2023-12-14-aeef181",
+  "version-string": "2023-12-21-dab4f3c",
   "description": "Beautiful C++ Test Framework \ud83d\udc53",
   "dependencies": [
     {
