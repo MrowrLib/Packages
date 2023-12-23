@@ -1,6 +1,6 @@
 {
   "name": "specs-libassert",
-  "version-string": "2023-12-23-b7ab892",
+  "version-string": "2023-12-23-3cd37b3",
   "description": "Beautiful C++ Test Framework \ud83d\udc53",
   "dependencies": [
     {
