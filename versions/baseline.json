@@ -51,6 +51,10 @@
     "specs-libassert": {
       "baseline": "2023-12-23-3cd37b3",
       "port-version": 0
+    },
+    "mrowr-virtual-collections": {
+      "baseline": "2023-12-29-9b5d3d3",
+      "port-version": 0
     }
   }
 }
