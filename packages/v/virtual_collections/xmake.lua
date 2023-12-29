@@ -1,0 +1,8 @@
+package("virtual_collections")
+    set_homepage("https://github.com/MrowrLib/virtual_collections.h")
+    set_description("C++ Map/Set/Array with pure virtual interfaces (safe to use across DLL boundaries)")
+    add_urls("https://github.com/MrowrLib/virtual_collections.h.git")
+    add_deps("collections", "void_pointer", "function_pointer")
+    on_install(function (package)
+        os.cp("include", package:installdir())
+    end)
