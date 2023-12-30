@@ -1,7 +1,7 @@
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://github.com/MrowrLib/virtual_collections.h.git
-    REF 3ce2f95a0a6514bbef45aa35709d445033022044
+    REF fed7b6197ab4c3fc3534e944a962f9a82fa4c9e7
 )
 
 vcpkg_cmake_configure(
