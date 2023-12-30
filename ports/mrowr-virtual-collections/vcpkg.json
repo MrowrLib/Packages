@@ -1,6 +1,6 @@
 {
   "name": "mrowr-virtual-collections",
-  "version-string": "2023-12-30-1140fb1",
+  "version-string": "2023-12-30-3ce2f95",
   "description": "C++ virtual Array/Map/Set",
   "dependencies": [
     {
