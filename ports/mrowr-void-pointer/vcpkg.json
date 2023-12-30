@@ -1,6 +1,6 @@
 {
   "name": "mrowr-void-pointer",
-  "version-string": "2023-10-25-00edabd",
+  "version-string": "2023-12-30-e171a2b",
   "description": "Memory-managed void* ",
   "dependencies": [
     {
