@@ -1,4 +1,4 @@
-package("memory_util")
+package("managed_pointer")
     set_homepage("https://github.com/MrowrLib/managed_pointer.h")
     set_description("C++ pointer with configurable ownership")
     add_urls("https://github.com/MrowrLib/managed_pointer.h.git")
