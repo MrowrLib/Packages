@@ -1,0 +1,7 @@
+package("memory_util")
+    set_homepage("https://github.com/MrowrLib/managed_pointer.h")
+    set_description("C++ pointer with configurable ownership")
+    add_urls("https://github.com/MrowrLib/managed_pointer.h.git")
+    on_install(function (package)
+        os.cp("include", package:installdir())
+    end)
