@@ -1,7 +1,7 @@
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://github.com/MrowrLib/managed_pointer.h.git
-    REF d11bdff7199e81262ba6927554c775eb63da571c
+    REF 7cf6e9c16c72e4fe2bc0f737326e4b6a4ebe7d79
 )
 
 vcpkg_cmake_configure(

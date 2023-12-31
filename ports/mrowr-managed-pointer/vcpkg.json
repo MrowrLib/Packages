@@ -1,6 +1,6 @@
 {
   "name": "mrowr-managed-pointer",
-  "version-string": "2023-12-31-d11bdff",
+  "version-string": "2023-12-31-7cf6e9c",
   "description": "C++ pointer with configurable ownership",
   "dependencies": [
     {
