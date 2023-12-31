@@ -55,6 +55,10 @@
     "mrowr-virtual-collections": {
       "baseline": "2023-12-30-30f0672",
       "port-version": 0
+    },
+    "mrowr-managed-pointer": {
+      "baseline": "2023-12-31-8384848",
+      "port-version": 0
     }
   }
 }
