@@ -1,6 +1,6 @@
 {
   "name": "mrowr-void-pointer",
-  "version-string": "2023-12-30-e171a2b",
+  "version-string": "2023-12-31-7fe9da5",
   "description": "Memory-managed void* ",
   "dependencies": [
     {
@@ -10,6 +10,7 @@
     {
       "name": "vcpkg-cmake-config",
       "host": true
-    }
+    },
+    "mrowr-managed-pointer"
   ]
 }
