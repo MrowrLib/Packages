@@ -1,6 +1,6 @@
 {
   "name": "specs",
-  "version-string": "2023-12-30-a5df4ae",
+  "version-string": "2024-01-03-40506ba",
   "description": "Beautiful C++ Test Framework \ud83d\udc53",
   "dependencies": [
     {
@@ -17,6 +17,7 @@
     "mrowr-log",
     "mrowr-string-format",
     "mrowr-void-pointer",
+    "mrowr-virtual-collections",
     "cxxopts"
   ]
 }
