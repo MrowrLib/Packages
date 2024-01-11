@@ -1,0 +1,7 @@
+package("minispecs")
+    set_homepage("https://github.com/MrowrLib/MiniSpecs.cpp")
+    set_description("Mini C++ Test Framework")
+    add_urls("https://github.com/MrowrLib/MiniSpecs.cpp.git")
+    on_install(function (package)
+        os.cp("MiniSpecs/include", package:installdir())
+    end)
