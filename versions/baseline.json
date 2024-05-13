@@ -59,6 +59,10 @@
     "mrowr-managed-pointer": {
       "baseline": "2023-12-31-fbbfc5b",
       "port-version": 0
+    },
+    "minispecs": {
+      "baseline": "2024-05-13-ddf3abc",
+      "port-version": 0
     }
   }
 }

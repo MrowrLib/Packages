@@ -1,0 +1,15 @@
+{
+  "name": "minispecs",
+  "version-string": "2024-05-13-ddf3abc",
+  "description": "Mini C++ Test Framework",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}
