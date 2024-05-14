@@ -1,6 +1,6 @@
 {
   "name": "minispecs",
-  "version-string": "2024-05-13-ddf3abc",
+  "version-string": "2024-05-14-30960fc",
   "description": "Mini C++ Test Framework",
   "dependencies": [
     {

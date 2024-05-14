@@ -1,7 +1,7 @@
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://github.com/MrowrLib/MiniSpecs.cpp.git
-    REF ddf3abc7a15b7fc47d890e001f782b35a8815941
+    REF 30960fc132f5c0e3414af5cec3c7020379ab6be2
 )
 
 vcpkg_cmake_configure(
